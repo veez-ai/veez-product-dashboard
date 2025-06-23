@@ -1389,6 +1389,7 @@
         function openAIGenerator(productId) {
             // Ouvrir le modal et aller directement à l'onglet IA
             currentProductId = productId;
+            console.log('Ouverture générateur IA pour produit:', productId);
             openProductModal(productId).then(function() {
                 switchModalTab('ai');
             });
@@ -1418,7 +1419,8 @@
             }
 
             if (!currentProductId) {
-                alert('Erreur: ID de produit manquant. Veuillez rouvrir le modal.');
+                alert('Erreur: ID de produit manquant. Debug: currentProductId = ' + currentProductId);
+                console.error('currentProductId manquant:', currentProductId);
                 return;
             }
 
@@ -1426,15 +1428,14 @@
             var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
             var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
             
+            console.log('Début génération - Produit:', currentProductId, 'Prompt:', prompt, 'Ratio:', aspectRatio);
+            
             var btn = document.querySelector('.generate-btn');
             btn.disabled = true;
             btn.textContent = '🎨 Génération en cours...';
             
             // Masquer les images précédentes
             document.getElementById('generatedImages').classList.add('hidden');
-            
-            // Vérifier d'abord si le serveur proxy est accessible
-            console.log('Vérification de l\'état du serveur proxy...');
             
             // Appel à l'API Veez.ai pour générer l'image
             generateImageViaAPI(currentProductId, prompt, aspectRatio)
@@ -1614,6 +1615,10 @@
         async function openProductModal(productId) {
             const modal = document.getElementById('productModal');
             modal.classList.add('active');
+            
+            // Stocker l'ID du produit
+            currentProductId = productId;
+            console.log('Modal ouvert pour produit:', productId);
             
             // Afficher un loader pendant le chargement
             document.getElementById('modalProductTitle').textContent = 'Chargement...';
