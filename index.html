@@ -1022,8 +1022,11 @@
                     <small style="color: #6b7280;">
                         🎭 <strong>Mode démo actif</strong> - Configurez le serveur proxy pour l'API réelle
                         <br>
+                        <button onclick="testAPIConnection()" style="background: none; border: 1px solid #059669; color: #059669; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; margin-right: 5px; cursor: pointer;">
+                            🔍 Tester la connexion
+                        </button>
                         <button onclick="generateAIImageViaRealAPI()" style="background: none; border: 1px solid #7c3aed; color: #7c3aed; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; cursor: pointer;">
-                            Tester l'API réelle
+                            🚀 Tester l'API réelle
                         </button>
                     </small>
                 </div>
@@ -1469,7 +1472,6 @@
                 });
         }
 
-        // Fonction pour tenter l'API réelle (à utiliser quand le proxy sera configuré)
         function generateAIImageViaRealAPI() {
             var prompt = document.getElementById('promptInput').value.trim();
             if (!prompt) {
@@ -1483,15 +1485,25 @@
                 return;
             }
 
+            if (!currentToken) {
+                alert('Erreur: Token d\'authentification manquant. Veuillez vous reconnecter.');
+                console.error('currentToken manquant');
+                return;
+            }
+
             // Récupérer le format sélectionné
             var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
             var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
             
-            console.log('Début génération - Produit:', currentProductId, 'Prompt:', prompt, 'Ratio:', aspectRatio);
+            console.log('🚀 DÉBUT TEST API RÉELLE');
+            console.log('Produit:', currentProductId);
+            console.log('Prompt:', prompt);
+            console.log('Ratio:', aspectRatio);
+            console.log('Token:', currentToken ? currentToken.substring(0, 20) + '...' : 'MANQUANT');
             
             var btn = document.querySelector('.generate-btn');
             btn.disabled = true;
-            btn.textContent = '🎨 Génération en cours...';
+            btn.textContent = '🎨 Test API en cours...';
             
             // Masquer les images précédentes
             document.getElementById('generatedImages').classList.add('hidden');
@@ -1499,24 +1511,36 @@
             // Appel à l'API Veez.ai pour générer l'image
             generateImageViaAPI(currentProductId, prompt, aspectRatio)
                 .then(function(result) {
+                    console.log('🎯 Résultat final:', result);
+                    
                     if (result.success) {
                         displayGeneratedImages([result.imageUrl], result.isSimulation);
                         if (result.isSimulation) {
-                            showStatus('🎭 Image de démonstration générée ! Configurez le serveur proxy pour l\'API réelle.', 'success');
+                            showStatus('🎭 Fallback: Image de démonstration générée (API échouée)', 'warning');
                         } else {
-                            showStatus('Image générée avec succès !', 'success');
+                            showStatus('✅ Image générée via API réelle !', 'success');
                         }
                     } else {
                         throw new Error(result.error || 'Erreur de génération');
                     }
                 })
                 .catch(function(error) {
-                    console.error('Erreur génération:', error);
+                    console.error('❌ Erreur finale génération:', error);
                     
-                    // Message d'erreur plus explicite
+                    // Message d'erreur détaillé
                     let errorMessage = 'Erreur lors de la génération: ' + error.message;
                     
-                    if (error.message.includes('HTML au lieu de JSON')) {
+                    if (error.message.includes('400')) {
+                        errorMessage += '\n\n🔍 Erreur 400 - Vérifications:\n' +
+                            '• Token d\'authentification valide ?\n' +
+                            '• ID de produit correct ?\n' +
+                            '• Format des paramètres accepté par l\'API ?\n' +
+                            '• Permissions sur ce produit ?';
+                    } else if (error.message.includes('401')) {
+                        errorMessage += '\n\n🔐 Erreur 401 - Problème d\'authentification:\n' +
+                            '• Reconnectez-vous pour obtenir un nouveau token\n' +
+                            '• Vérifiez les permissions de votre compte';
+                    } else if (error.message.includes('HTML au lieu de JSON')) {
                         errorMessage += '\n\n💡 Solutions:\n' +
                             '1. Vérifiez que le serveur proxy Render fonctionne\n' +
                             '2. Essayez de décocher "Utiliser le serveur proxy Render"\n' +
@@ -1527,7 +1551,7 @@
                 })
                 .finally(function() {
                     btn.disabled = false;
-                    btn.textContent = '🎨 Générer l\'image';
+                    btn.textContent = '🎨 Générer l\'image (Mode Démo)';
                 });
         }
 
@@ -1659,7 +1683,63 @@
             }
         }
 
-        // Fonction pour vérifier le statut d'une prédiction
+        // Fonction pour tester la connexion API avant la génération
+        async function testAPIConnection() {
+            console.log('🔍 Test de connexion API...');
+            
+            if (!currentToken) {
+                alert('❌ Token d\'authentification manquant. Veuillez vous reconnecter.');
+                return;
+            }
+            
+            if (!currentProductId) {
+                alert('❌ ID de produit manquant. Ouvrez d\'abord un produit.');
+                return;
+            }
+            
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let testUrl;
+                
+                if (useRenderProxy) {
+                    testUrl = `https://veez-api-proxy.onrender.com/api/product/${currentProductId}`;
+                } else {
+                    testUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${currentProductId}`;
+                }
+                
+                console.log('🌐 Test URL:', testUrl);
+                console.log('🔑 Token:', currentToken.substring(0, 20) + '...');
+                
+                const response = await fetch(testUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + currentToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📊 Status de réponse:', response.status);
+                const responseText = await response.text();
+                console.log('📋 Réponse:', responseText.substring(0, 200) + '...');
+                
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    alert(`✅ Connexion API réussie !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide\n\nVous pouvez maintenant tester l'API de génération !`);
+                } else if (response.status === 400) {
+                    alert(`❌ Erreur 400 - Requête invalide\n\nPossibles causes:\n• ID de produit incorrect: ${currentProductId}\n• Format de requête non accepté\n• Paramètres manquants\n\nVérifiez l'ID du produit.`);
+                } else if (response.status === 401) {
+                    alert(`❌ Erreur 401 - Non autorisé\n\nToken d'authentification invalide ou expiré.\nVeuillez vous reconnecter pour obtenir un nouveau token.`);
+                } else if (response.status === 403) {
+                    alert(`❌ Erreur 403 - Accès interdit\n\nVous n'avez pas les permissions pour accéder à ce produit.\nVérifiez que le produit vous appartient.`);
+                } else {
+                    alert(`❌ Erreur ${response.status}\n\nRéponse: ${responseText.substring(0, 200)}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur test connexion:', error);
+                alert(`❌ Erreur de connexion: ${error.message}\n\nVérifiez:\n• Votre connexion internet\n• Le serveur proxy Render\n• Les paramètres CORS`);
+            }
+        }
         async function checkPredictionStatus(predictionId, maxAttempts = 30) {
             try {
                 const useRenderProxy = document.getElementById('useRenderProxy').checked;
