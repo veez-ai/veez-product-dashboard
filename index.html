@@ -1022,6 +1022,9 @@
                     <small style="color: #6b7280;">
                         🎭 <strong>Mode démo actif</strong> - Configurez le serveur proxy pour l'API réelle
                         <br>
+                        <button onclick="refreshAuthToken()" style="background: none; border: 1px solid #dc2626; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; margin-right: 5px; cursor: pointer;">
+                            🔄 Renouveler token
+                        </button>
                         <button onclick="testAPIConnection()" style="background: none; border: 1px solid #059669; color: #059669; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; margin-right: 5px; cursor: pointer;">
                             🔍 Tester la connexion
                         </button>
@@ -1683,7 +1686,38 @@
             }
         }
 
-        // Fonction pour tester la connexion API avant la génération
+        // Fonction pour renouveler le token d'authentification
+        function refreshAuthToken() {
+            console.log('🔄 Renouvellement du token...');
+            
+            // Simuler la récupération d'un nouveau token depuis l'interface Veez
+            const newToken = prompt(`🔑 Entrez votre nouveau token d'authentification Veez.ai:\n\n💡 Pour obtenir un nouveau token:\n1. Allez sur https://app.veez.ai\n2. Connectez-vous à votre compte\n3. Copiez le token depuis l'interface\n\nToken actuel: ${currentToken ? currentToken.substring(0, 20) + '...' : 'Aucun'}`);
+            
+            if (newToken && newToken.trim()) {
+                const cleanToken = newToken.trim();
+                currentToken = cleanToken;
+                
+                // Sauvegarder dans localStorage pour persistence
+                try {
+                    localStorage.setItem('veez_auth_token', cleanToken);
+                    console.log('✅ Nouveau token sauvegardé');
+                } catch (e) {
+                    console.log('⚠️ Impossible de sauvegarder le token dans localStorage');
+                }
+                
+                alert(`✅ Token mis à jour avec succès !\n\nNouveau token: ${cleanToken.substring(0, 20)}...\n\nVous pouvez maintenant tester la connexion API.`);
+                
+                // Masquer le message d'erreur API s'il était affiché
+                const errorElement = document.querySelector('.error-message');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+                
+                console.log('🎯 Token mis à jour:', cleanToken.substring(0, 20) + '...');
+            } else if (newToken !== null) {
+                alert('❌ Token vide ou invalide. Veuillez entrer un token valide.');
+            }
+        }
         async function testAPIConnection() {
             console.log('🔍 Test de connexion API...');
             
@@ -1698,19 +1732,31 @@
             }
             
             try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let testUrl;
+                console.log('🎯 Test multiple des APIs...');
                 
-                if (useRenderProxy) {
-                    testUrl = `https://veez-api-proxy.onrender.com/api/product/${currentProductId}`;
-                } else {
-                    testUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${currentProductId}`;
+                // Test 1: API directe sans proxy (pour tester le token)
+                console.log('🧪 Test 1: API directe Veez.ai (test du token)');
+                try {
+                    const directResponse = await fetch(`https://app.veez.ai/api/product/${currentProductId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + currentToken,
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'no-cors' // Pour éviter CORS mais ne permet pas de lire la réponse
+                    });
+                    console.log('✅ Test direct: Requête envoyée (pas de lecture possible à cause de CORS)');
+                } catch (error) {
+                    console.log('❌ Test direct échoué:', error.message);
                 }
                 
-                console.log('🌐 Test URL:', testUrl);
+                // Test 2: Via le serveur proxy Render
+                console.log('🧪 Test 2: Via serveur proxy Render');
+                const renderUrl = `https://veez-api-proxy.onrender.com/api/product/${currentProductId}`;
+                console.log('🌐 Test URL Render:', renderUrl);
                 console.log('🔑 Token:', currentToken.substring(0, 20) + '...');
                 
-                const response = await fetch(testUrl, {
+                const renderResponse = await fetch(renderUrl, {
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + currentToken,
@@ -1718,26 +1764,48 @@
                     }
                 });
                 
-                console.log('📊 Status de réponse:', response.status);
-                const responseText = await response.text();
-                console.log('📋 Réponse:', responseText.substring(0, 200) + '...');
+                console.log('📊 Status Render:', renderResponse.status);
+                const renderText = await renderResponse.text();
+                console.log('📋 Réponse Render:', renderText.substring(0, 200) + '...');
                 
-                if (response.ok) {
-                    const data = JSON.parse(responseText);
-                    alert(`✅ Connexion API réussie !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide\n\nVous pouvez maintenant tester l'API de génération !`);
-                } else if (response.status === 400) {
-                    alert(`❌ Erreur 400 - Requête invalide\n\nPossibles causes:\n• ID de produit incorrect: ${currentProductId}\n• Format de requête non accepté\n• Paramètres manquants\n\nVérifiez l'ID du produit.`);
-                } else if (response.status === 401) {
-                    alert(`❌ Erreur 401 - Non autorisé\n\nToken d'authentification invalide ou expiré.\nVeuillez vous reconnecter pour obtenir un nouveau token.`);
-                } else if (response.status === 403) {
-                    alert(`❌ Erreur 403 - Accès interdit\n\nVous n'avez pas les permissions pour accéder à ce produit.\nVérifiez que le produit vous appartient.`);
+                if (renderResponse.ok) {
+                    const data = JSON.parse(renderText);
+                    alert(`✅ Connexion API réussie via Render !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide\n\nVous pouvez maintenant tester l'API de génération !`);
+                    return;
                 } else {
-                    alert(`❌ Erreur ${response.status}\n\nRéponse: ${responseText.substring(0, 200)}`);
+                    console.log(`❌ Render failed with ${renderResponse.status}: ${renderText}`);
                 }
+                
+                // Test 3: Via CORS-Anywhere (si encore accessible)
+                console.log('🧪 Test 3: Via CORS-Anywhere');
+                try {
+                    const corsUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${currentProductId}`;
+                    const corsResponse = await fetch(corsUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + currentToken,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    console.log('📊 Status CORS-Anywhere:', corsResponse.status);
+                    
+                    if (corsResponse.ok) {
+                        const corsText = await corsResponse.text();
+                        const data = JSON.parse(corsText);
+                        alert(`✅ Connexion API réussie via CORS-Anywhere !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide`);
+                        return;
+                    }
+                } catch (corsError) {
+                    console.log('❌ CORS-Anywhere non accessible:', corsError.message);
+                }
+                
+                // Aucun test n'a réussi
+                alert(`❌ Tous les tests de connexion ont échoué\n\n🔍 Diagnostics:\n\n1. Serveur Render: Erreur ${renderResponse.status}\n2. CORS-Anywhere: Bloqué (403)\n3. API directe: CORS bloqué\n\n💡 Solutions:\n• Vérifiez que votre token est encore valide\n• Attendez que le serveur Render redémarre\n• Utilisez le mode démo en attendant\n\n📋 Token actuel: ${currentToken.substring(0, 20)}...`);
                 
             } catch (error) {
                 console.error('❌ Erreur test connexion:', error);
-                alert(`❌ Erreur de connexion: ${error.message}\n\nVérifiez:\n• Votre connexion internet\n• Le serveur proxy Render\n• Les paramètres CORS`);
+                alert(`❌ Erreur de connexion: ${error.message}\n\n🔍 Vérifiez:\n• Votre connexion internet\n• La validité du token\n• L'accessibilité des serveurs proxy`);
             }
         }
         async function checkPredictionStatus(predictionId, maxAttempts = 30) {
