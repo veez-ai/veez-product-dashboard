@@ -152,8 +152,8 @@
 
         .product-image {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            height: 300px; /* Augmenté pour format carré */
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -161,17 +161,36 @@
             color: #6c757d;
             position: relative;
             overflow: hidden;
+            border-radius: 15px 15px 0 0;
         }
 
         .product-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Garde les proportions sans cropping */
+            object-position: center;
+            background: transparent; /* Pour les PNG transparents */
         }
 
         .product-image.loading {
             font-size: 1rem;
             color: #999;
+        }
+
+        /* Effet spécial pour les PNG transparents */
+        .product-image.transparent {
+            background: linear-gradient(45deg, 
+                rgba(255,255,255,0.8) 25%, 
+                transparent 25%, 
+                transparent 75%, 
+                rgba(255,255,255,0.8) 75%),
+            linear-gradient(45deg, 
+                rgba(255,255,255,0.8) 25%, 
+                transparent 25%, 
+                transparent 75%, 
+                rgba(255,255,255,0.8) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
 
         .product-content {
@@ -435,6 +454,12 @@
                         img.onload = () => {
                             imageElement.innerHTML = '';
                             imageElement.appendChild(img);
+                            
+                            // Détection PNG transparent et application du style
+                            if (imageUrl.toLowerCase().includes('.png')) {
+                                imageElement.classList.add('transparent');
+                            }
+                            
                             console.log(`✅ Image packshot chargée: ${firstPackshotKey}`);
                         };
                         img.onerror = () => {
@@ -455,6 +480,12 @@
                         img.onload = () => {
                             imageElement.innerHTML = '';
                             imageElement.appendChild(img);
+                            
+                            // Détection PNG transparent et application du style
+                            if (imageUrl.toLowerCase().includes('.png')) {
+                                imageElement.classList.add('transparent');
+                            }
+                            
                             console.log(`✅ Image texture chargée: ${firstTextureKey}`);
                         };
                         img.onerror = () => {
