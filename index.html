@@ -231,22 +231,34 @@
             border-radius: 4px;
         }
 
-        .lora-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .product-lora {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .lora-enabled {
-            background: #d4edda;
-            color: #155724;
+        
+        .product-lora.enabled {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
         }
-
-        .lora-disabled {
-            background: #f8d7da;
-            color: #721c24;
+        
+        .product-lora.enabled:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .product-lora.disabled {
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
         }
 
         .product-date {
@@ -385,8 +397,133 @@
             align-items: center;
         }
 
+        /* Mode tabs dans le modal */
+        .modal-tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 30px;
+            gap: 0;
+        }
+        
+        .modal-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .modal-tab.active {
+            color: #7c3aed;
+            border-bottom-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.05);
+        }
+        
+        .modal-tab:hover:not(.active) {
+            color: #4b5563;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
         .product-detail-body {
             padding: 30px;
+        }
+
+        /* Générateur d'images IA */
+        .ai-generator {
+            display: none;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .ai-generator.active {
+            display: block;
+        }
+        
+        .prompt-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+        
+        .prompt-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        
+        .prompt-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .generate-btn:hover {
+            background: linear-gradient(135deg, #5b21b6, #4c1d95);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+        }
+        
+        .generate-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .ai-tips {
+            background: rgba(124, 58, 237, 0.05);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        
+        .ai-tips h4 {
+            color: #7c3aed;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .ai-tips ul {
+            margin: 0;
+            padding-left: 16px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .ai-tips li {
+            margin-bottom: 4px;
         }
 
         .packshots-grid {
@@ -738,21 +875,59 @@
                 <p class="product-detail-description" id="modalProductDescription">Description</p>
                 <div class="product-detail-meta">
                     <div class="product-id" id="modalProductId">ID: abc123</div>
-                    <div class="lora-badge" id="modalLoraStatus">LoRA</div>
+                    <div class="product-lora" id="modalLoraStatus">LoRA</div>
                     <div class="product-date" id="modalProductDate">Date</div>
                 </div>
             </div>
-            <div class="product-detail-body">
-                <div class="section-title">🎨 Rendus 3D (Packshots)</div>
-                <div id="packshotsGrid" class="packshots-grid">
-                    <!-- Les packshots seront ajoutés ici -->
-                </div>
-                
-                <div class="textures-section" id="texturesSection" style="display: none;">
-                    <div class="section-title">🖼️ Textures</div>
-                    <div id="texturesGrid" class="textures-grid">
-                        <!-- Les textures seront ajoutées ici -->
+            
+            <!-- Onglets du modal -->
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchModalTab('3d')">
+                    📦 Rendus 3D
+                </button>
+                <button class="modal-tab" id="aiTabBtn" onclick="switchModalTab('ai')" style="display: none;">
+                    🎨 Générateur IA
+                </button>
+            </div>
+            
+            <!-- Contenu 3D -->
+            <div class="modal-content-3d" id="modalContent3D">
+                <div class="product-detail-body">
+                    <div class="section-title">🎨 Rendus 3D (Packshots)</div>
+                    <div id="packshotsGrid" class="packshots-grid">
+                        <!-- Les packshots seront ajoutés ici -->
                     </div>
+                    
+                    <div class="textures-section" id="texturesSection" style="display: none;">
+                        <div class="section-title">🖼️ Textures</div>
+                        <div id="texturesGrid" class="textures-grid">
+                            <!-- Les textures seront ajoutées ici -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenu Générateur IA -->
+            <div class="ai-generator" id="aiGenerator">
+                <label class="prompt-label" for="promptInput">Décrivez votre image :</label>
+                <textarea 
+                    id="promptInput" 
+                    class="prompt-input" 
+                    placeholder="Exemple : Une photo de produit sur fond blanc avec un éclairage studio, vue de face, style minimaliste..."
+                ></textarea>
+                
+                <button class="generate-btn" onclick="generateAIImage()">
+                    🎨 Générer l'image
+                </button>
+                
+                <div class="ai-tips">
+                    <h4>💡 Conseils pour de meilleurs résultats :</h4>
+                    <ul>
+                        <li>Soyez précis sur l'angle de vue (face, profil, 3/4...)</li>
+                        <li>Spécifiez le style d'éclairage (studio, naturel, dramatique...)</li>
+                        <li>Mentionnez le fond souhaité (blanc, transparent, contexte...)</li>
+                        <li>Ajoutez des détails sur l'ambiance (moderne, vintage, luxe...)</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -761,6 +936,7 @@
     <script>
         let currentToken = '';
         let products = [];
+        let currentProductId = null;
 
         function showStatus(message, type = 'loading') {
             const statusDiv = document.getElementById('status');
@@ -909,6 +1085,8 @@
             let productsHTML = '';
             for (let i = 0; i < products.length; i++) {
                 const product = products[i];
+                const loraStatus = product.lora_enabled === true || product.lora_enabled === 'true' || product.lora_enabled === 1;
+                
                 productsHTML += '<div class="product-card">' +
                     '<div class="product-image loading" id="image-' + product.id + '">Chargement...</div>' +
                     '<div class="product-content">' +
@@ -916,9 +1094,10 @@
                         '<p class="product-description">' + escapeHtml(product.description || 'Aucune description disponible') + '</p>' +
                         '<div class="product-meta">' +
                             '<div class="product-id">ID: ' + product.id.substring(0, 8) + '...</div>' +
-                            '<div class="lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled') + '">' +
-                                (product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé') +
-                            '</div>' +
+                            '<button class="product-lora ' + (loraStatus ? 'enabled' : 'disabled') + '"' + 
+                            (loraStatus ? ' onclick="openAIGenerator(\'' + product.id + '\')"' : '') + '>' +
+                                (loraStatus ? '🎨 LoRA Activé' : '❌ LoRA Désactivé') +
+                            '</button>' +
                         '</div>' +
                         '<div class="product-date">📅 Modifié: ' + formatDate(product.date_modification) + '</div>' +
                     '</div>' +
@@ -940,7 +1119,9 @@
         function updateStats(products) {
             const statsContainer = document.getElementById('statsContainer');
             const totalProducts = products.length;
-            const loraEnabled = products.filter(function(p) { return p.lora_enabled; }).length;
+            const loraEnabled = products.filter(function(p) { 
+                return p.lora_enabled === true || p.lora_enabled === 'true' || p.lora_enabled === 1; 
+            }).length;
             const templateIds = [];
             for (let i = 0; i < products.length; i++) {
                 if (templateIds.indexOf(products[i].template_id) === -1) {
@@ -1099,7 +1280,50 @@
             setTimeout(hideStatus, 3000);
         }
 
-        // Fonctions pour le modal
+        // Fonctions pour le modal et générateur IA
+        function openAIGenerator(productId) {
+            // Ouvrir le modal et aller directement à l'onglet IA
+            currentProductId = productId;
+            openProductModal(productId).then(function() {
+                switchModalTab('ai');
+            });
+        }
+        
+        function switchModalTab(tab) {
+            // Gestion des onglets
+            var tabs = document.querySelectorAll('.modal-tab');
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            
+            if (tab === '3d') {
+                document.querySelector('.modal-tab[onclick*="3d"]').classList.add('active');
+                document.getElementById('modalContent3D').style.display = 'block';
+                document.getElementById('aiGenerator').classList.remove('active');
+            } else if (tab === 'ai') {
+                document.querySelector('.modal-tab[onclick*="ai"]').classList.add('active');
+                document.getElementById('modalContent3D').style.display = 'none';
+                document.getElementById('aiGenerator').classList.add('active');
+            }
+        }
+        
+        function generateAIImage() {
+            var prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert('Veuillez entrer une description pour générer une image.');
+                return;
+            }
+            
+            var btn = document.querySelector('.generate-btn');
+            btn.disabled = true;
+            btn.textContent = '🎨 Génération en cours...';
+            
+            // Simulation de génération (à remplacer par l'API Veez.ai)
+            setTimeout(function() {
+                alert('Fonctionnalité en développement !\n\nPrompt: ' + prompt + '\n\nCette fonction sera connectée à l\'API Veez.ai pour la génération d\'images IA.');
+                btn.disabled = false;
+                btn.textContent = '🎨 Générer l\'image';
+            }, 2000);
+        }
+
         async function openProductModal(productId) {
             const modal = document.getElementById('productModal');
             modal.classList.add('active');
@@ -1145,9 +1369,21 @@
             document.getElementById('modalProductId').textContent = 'ID: ' + product.id.substring(0, 8) + '...';
             document.getElementById('modalProductDate').textContent = '📅 Modifié: ' + formatDate(product.date_modification);
             
+            // Afficher l'onglet IA seulement si LoRA est activé
+            var aiTabBtn = document.getElementById('aiTabBtn');
+            var hasLora = product.lora_enabled === true || product.lora_enabled === 'true' || product.lora_enabled === 1;
+            if (hasLora) {
+                aiTabBtn.style.display = 'block';
+            } else {
+                aiTabBtn.style.display = 'none';
+            }
+            
+            // Commencer par l'onglet 3D
+            switchModalTab('3d');
+            
             const loraStatus = document.getElementById('modalLoraStatus');
-            loraStatus.textContent = product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
-            loraStatus.className = 'lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled');
+            loraStatus.textContent = hasLora ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
+            loraStatus.className = 'product-lora ' + (hasLora ? 'enabled' : 'disabled');
             
             // Afficher les packshots
             const packshotsGrid = document.getElementById('packshotsGrid');
@@ -1186,7 +1422,7 @@
                                     '</div>' +
                                     '<div class="info-row">' +
                                         '<span class="info-label">⚡ Générée avec</span>' +
-                                        '<span class="info-value">Veez.ai ' + (product.lora_enabled ? '+ LoRA' : '') + '</span>' +
+                                        '<span class="info-value">Veez.ai ' + (hasLora ? '+ LoRA' : '') + '</span>' +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="image-actions">' +
@@ -1229,6 +1465,8 @@
 
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
+            // Reset à l'onglet 3D pour la prochaine ouverture
+            switchModalTab('3d');
         }
 
         function expandPackshot(imageId, angle, url) {
@@ -1336,4 +1574,4 @@
         document.getElementById('tokenInput').focus();
     </script>
 </body>
-</html>'
+</html>
