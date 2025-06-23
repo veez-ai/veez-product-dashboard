@@ -574,7 +574,49 @@
             });
         }
 
-        function updateStats(products) {
+        async function loadProductImage(productId, imageElement) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let imageUrl;
+                
+                if (useRenderProxy) {
+                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
+                } else {
+                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
+                }
+                
+                const response = await fetch(imageUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageObjectURL = URL.createObjectURL(blob);
+                    
+                    const img = document.createElement('img');
+                    img.src = imageObjectURL;
+                    img.alt = 'Preview du produit';
+                    img.onload = () => {
+                        imageElement.innerHTML = '';
+                        imageElement.appendChild(img);
+                    };
+                    img.onerror = () => {
+                        imageElement.innerHTML = '🖼️';
+                        imageElement.classList.remove('loading');
+                    };
+                } else {
+                    imageElement.innerHTML = '📦';
+                    imageElement.classList.remove('loading');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'image:', error);
+                imageElement.innerHTML = '📦';
+                imageElement.classList.remove('loading');
+            }
+        }
             const statsContainer = document.getElementById('statsContainer');
             const totalProducts = products.length;
             const loraEnabled = products.filter(p => p.lora_enabled).length;
