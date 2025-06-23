@@ -1441,8 +1441,12 @@
             generateImageViaAPI(currentProductId, prompt, aspectRatio)
                 .then(function(result) {
                     if (result.success) {
-                        displayGeneratedImages([result.imageUrl]);
-                        showStatus('Image générée avec succès !', 'success');
+                        displayGeneratedImages([result.imageUrl], result.isSimulation);
+                        if (result.isSimulation) {
+                            showStatus('🎭 Image de démonstration générée ! Configurez le serveur proxy pour l\'API réelle.', 'success');
+                        } else {
+                            showStatus('Image générée avec succès !', 'success');
+                        }
                     } else {
                         throw new Error(result.error || 'Erreur de génération');
                     }
@@ -1505,6 +1509,13 @@
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('Erreur HTTP:', response.status, errorText);
+                    
+                    // Si c'est une erreur de proxy, proposer une simulation
+                    if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
+                        console.log('Serveur proxy non configuré pour /api/prediction/, utilisation du mode simulation');
+                        return await simulateImageGeneration(productId, prompt, aspectRatio);
+                    }
+                    
                     throw new Error('Erreur API: ' + response.status + ' - ' + errorText);
                 }
 
@@ -1513,6 +1524,13 @@
                 if (!contentType || !contentType.includes('application/json')) {
                     const responseText = await response.text();
                     console.error('Réponse non-JSON reçue:', responseText);
+                    
+                    // Si on reçoit du HTML, utiliser la simulation
+                    if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
+                        console.log('HTML reçu au lieu de JSON, passage en mode simulation');
+                        return await simulateImageGeneration(productId, prompt, aspectRatio);
+                    }
+                    
                     throw new Error('Réponse serveur inattendue (HTML au lieu de JSON). Le serveur proxy pourrait avoir un problème.');
                 }
 
@@ -1535,11 +1553,43 @@
                 }
             } catch (error) {
                 console.error('Erreur génération API:', error);
+                
+                // En cas d'erreur réseau, proposer la simulation
+                if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+                    console.log('Erreur réseau, passage en mode simulation');
+                    return await simulateImageGeneration(productId, prompt, aspectRatio);
+                }
+                
                 return {
                     success: false,
                     error: error.message
                 };
             }
+        }
+
+        // Fonction de simulation pour tester l'interface
+        async function simulateImageGeneration(productId, prompt, aspectRatio) {
+            console.log('🎭 Mode simulation activé');
+            console.log('Simulation génération pour:', { productId, prompt, aspectRatio });
+            
+            // Simuler un délai de traitement
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Images de démonstration (vous pouvez remplacer par vos propres URLs)
+            const demoImages = [
+                'https://via.placeholder.com/512x512/7c3aed/ffffff?text=Demo+IA+1',
+                'https://via.placeholder.com/512x512/10b981/ffffff?text=Demo+IA+2',
+                'https://via.placeholder.com/512x512/f59e0b/ffffff?text=Demo+IA+3'
+            ];
+            
+            const randomImage = demoImages[Math.floor(Math.random() * demoImages.length)];
+            
+            return {
+                success: true,
+                imageUrl: randomImage,
+                predictionId: 'demo_' + Date.now(),
+                isSimulation: true
+            };
         }
 
         async function checkPredictionStatus(predictionId, maxRetries = 10) {
@@ -1586,24 +1636,31 @@
             }
         }
 
-        function displayGeneratedImages(imageUrls) {
+        function displayGeneratedImages(imageUrls, isSimulation = false) {
             const container = document.getElementById('generatedImagesGrid');
             const generatedSection = document.getElementById('generatedImages');
             
             let imagesHTML = '';
             for (let i = 0; i < imageUrls.length; i++) {
                 const imageUrl = imageUrls[i];
+                const simulationBadge = isSimulation ? 
+                    '<div style="position: absolute; top: 5px; right: 5px; background: #f59e0b; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px;">DEMO</div>' : '';
+                
                 imagesHTML += 
-                    '<div class="generated-image-item">' +
+                    '<div class="generated-image-item" style="position: relative;">' +
+                        simulationBadge +
                         '<div class="generated-image">' +
                             '<img src="' + escapeHtml(imageUrl) + '" alt="Image générée" onclick="window.open(\'' + escapeHtml(imageUrl) + '\', \'_blank\')" style="cursor: pointer;">' +
                         '</div>' +
                         '<div class="generated-image-info">' +
-                            'Cliquez pour agrandir' +
+                            (isSimulation ? 'Image de démonstration' : 'Cliquez pour agrandir') +
                         '</div>' +
                         '<div style="margin-top: 10px; display: flex; gap: 5px; justify-content: center;">' +
-                            '<a href="' + escapeHtml(imageUrl) + '" download="generated_image_' + (i + 1) + '.png" class="btn-image btn-download" style="font-size: 11px; padding: 5px 10px;">⬇️ Télécharger</a>' +
-                            '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(imageUrl) + '\')" style="font-size: 11px; padding: 5px 10px;">📋 Copier URL</button>' +
+                            (isSimulation ? 
+                                '<small style="color: #f59e0b; font-weight: 500;">Mode démo - Configurez le serveur proxy pour l\'API réelle</small>' :
+                                '<a href="' + escapeHtml(imageUrl) + '" download="generated_image_' + (i + 1) + '.png" class="btn-image btn-download" style="font-size: 11px; padding: 5px 10px;">⬇️ Télécharger</a>' +
+                                '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(imageUrl) + '\')" style="font-size: 11px; padding: 5px 10px;">📋 Copier URL</button>'
+                            ) +
                         '</div>' +
                     '</div>';
             }
