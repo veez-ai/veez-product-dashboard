@@ -473,6 +473,40 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
+
+        .aspect-ratio-selector {
+            margin: 20px 0;
+        }
+
+        .aspect-ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .aspect-ratio-option {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .aspect-ratio-option:hover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .aspect-ratio-option.selected {
+            border-color: #7c3aed;
+            background: #7c3aed;
+            color: white;
+        }
         
         .generate-btn {
             background: linear-gradient(135deg, #7c3aed, #5b21b6);
@@ -499,6 +533,57 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+
+        .generated-images {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .generated-images.hidden {
+            display: none;
+        }
+
+        .generated-images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .generated-image-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .generated-image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .generated-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .generated-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .generated-image-info {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
         }
         
         .ai-tips {
@@ -913,20 +998,40 @@
                 <textarea 
                     id="promptInput" 
                     class="prompt-input" 
-                    placeholder="Exemple : Une photo de produit sur fond blanc avec un éclairage studio, vue de face, style minimaliste..."
+                    placeholder="Exemple : Une canette dans un bar, éclairage tamisé, ambiance chaleureuse..."
                 ></textarea>
+
+                <div class="aspect-ratio-selector">
+                    <label class="prompt-label">Format d'image :</label>
+                    <div class="aspect-ratio-grid">
+                        <div class="aspect-ratio-option" data-ratio="16:9">16:9<br><small>Paysage</small></div>
+                        <div class="aspect-ratio-option" data-ratio="3:2">3:2<br><small>Photo</small></div>
+                        <div class="aspect-ratio-option" data-ratio="5:4">5:4<br><small>Portrait</small></div>
+                        <div class="aspect-ratio-option selected" data-ratio="1:1">1:1<br><small>Carré</small></div>
+                        <div class="aspect-ratio-option" data-ratio="4:5">4:5<br><small>Portrait</small></div>
+                        <div class="aspect-ratio-option" data-ratio="2:3">2:3<br><small>Vertical</small></div>
+                        <div class="aspect-ratio-option" data-ratio="9:16">9:16<br><small>Stories</small></div>
+                    </div>
+                </div>
                 
                 <button class="generate-btn" onclick="generateAIImage()">
                     🎨 Générer l'image
                 </button>
+
+                <div class="generated-images hidden" id="generatedImages">
+                    <h4 style="color: #374151; margin-bottom: 10px;">🖼️ Images générées :</h4>
+                    <div class="generated-images-grid" id="generatedImagesGrid">
+                        <!-- Les images générées apparaîtront ici -->
+                    </div>
+                </div>
                 
                 <div class="ai-tips">
                     <h4>💡 Conseils pour de meilleurs résultats :</h4>
                     <ul>
-                        <li>Soyez précis sur l'angle de vue (face, profil, 3/4...)</li>
-                        <li>Spécifiez le style d'éclairage (studio, naturel, dramatique...)</li>
-                        <li>Mentionnez le fond souhaité (blanc, transparent, contexte...)</li>
-                        <li>Ajoutez des détails sur l'ambiance (moderne, vintage, luxe...)</li>
+                        <li>Soyez précis sur l'environnement (bar, cuisine, bureau, nature...)</li>
+                        <li>Spécifiez le style d'éclairage (studio, naturel, dramatique, tamisé...)</li>
+                        <li>Mentionnez l'ambiance souhaitée (moderne, vintage, luxe, décontracté...)</li>
+                        <li>Ajoutez des détails sur la mise en scène (angle, perspective, contexte...)</li>
                     </ul>
                 </div>
             </div>
@@ -1311,17 +1416,164 @@
                 alert('Veuillez entrer une description pour générer une image.');
                 return;
             }
+
+            // Récupérer le format sélectionné
+            var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
+            var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
             
             var btn = document.querySelector('.generate-btn');
             btn.disabled = true;
             btn.textContent = '🎨 Génération en cours...';
             
-            // Simulation de génération (à remplacer par l'API Veez.ai)
-            setTimeout(function() {
-                alert('Fonctionnalité en développement !\n\nPrompt: ' + prompt + '\n\nCette fonction sera connectée à l\'API Veez.ai pour la génération d\'images IA.');
-                btn.disabled = false;
-                btn.textContent = '🎨 Générer l\'image';
-            }, 2000);
+            // Masquer les images précédentes
+            document.getElementById('generatedImages').classList.add('hidden');
+            
+            // Appel à l'API Veez.ai pour générer l'image
+            generateImageViaAPI(currentProductId, prompt, aspectRatio)
+                .then(function(result) {
+                    if (result.success) {
+                        displayGeneratedImages([result.imageUrl]);
+                        showStatus('Image générée avec succès !', 'success');
+                    } else {
+                        throw new Error(result.error || 'Erreur de génération');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur génération:', error);
+                    alert('Erreur lors de la génération: ' + error.message);
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    btn.textContent = '🎨 Générer l\'image';
+                });
+        }
+
+        async function generateImageViaAPI(productId, prompt, aspectRatio) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let apiUrl;
+                
+                if (useRenderProxy) {
+                    apiUrl = 'https://veez-api-proxy.onrender.com/api/prediction/';
+                } else {
+                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/';
+                }
+
+                console.log('Génération image pour produit:', productId);
+                console.log('Prompt:', prompt);
+                console.log('Aspect ratio:', aspectRatio);
+
+                const formData = new FormData();
+                formData.append('product_id', productId);
+                formData.append('prompt', prompt);
+                formData.append('aspect_ratio', aspectRatio);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + currentToken
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Réponse API génération:', result);
+                    
+                    // L'API peut retourner directement l'image ou un ID de prédiction
+                    if (result.images && result.images.length > 0) {
+                        return {
+                            success: true,
+                            imageUrl: result.images[0],
+                            predictionId: result.id
+                        };
+                    } else if (result.id) {
+                        // Si on a un ID, on peut récupérer le résultat
+                        return await checkPredictionStatus(result.id);
+                    } else {
+                        throw new Error('Format de réponse inattendu');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    throw new Error('Erreur API: ' + response.status + ' - ' + errorText);
+                }
+            } catch (error) {
+                console.error('Erreur génération API:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function checkPredictionStatus(predictionId, maxRetries = 10) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let apiUrl;
+                
+                if (useRenderProxy) {
+                    apiUrl = 'https://veez-api-proxy.onrender.com/api/prediction/' + predictionId;
+                } else {
+                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/' + predictionId;
+                }
+
+                for (let i = 0; i < maxRetries; i++) {
+                    const response = await fetch(apiUrl, {
+                        headers: {
+                            'Authorization': 'Bearer ' + currentToken,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        if (result.images && result.images.length > 0) {
+                            return {
+                                success: true,
+                                imageUrl: result.images[0],
+                                predictionId: result.id
+                            };
+                        }
+                    }
+
+                    // Attendre 2 secondes avant de réessayer
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+
+                throw new Error('Timeout: la génération prend trop de temps');
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function displayGeneratedImages(imageUrls) {
+            const container = document.getElementById('generatedImagesGrid');
+            const generatedSection = document.getElementById('generatedImages');
+            
+            let imagesHTML = '';
+            for (let i = 0; i < imageUrls.length; i++) {
+                const imageUrl = imageUrls[i];
+                imagesHTML += 
+                    '<div class="generated-image-item">' +
+                        '<div class="generated-image">' +
+                            '<img src="' + escapeHtml(imageUrl) + '" alt="Image générée" onclick="window.open(\'' + escapeHtml(imageUrl) + '\', \'_blank\')" style="cursor: pointer;">' +
+                        '</div>' +
+                        '<div class="generated-image-info">' +
+                            'Cliquez pour agrandir' +
+                        '</div>' +
+                        '<div style="margin-top: 10px; display: flex; gap: 5px; justify-content: center;">' +
+                            '<a href="' + escapeHtml(imageUrl) + '" download="generated_image_' + (i + 1) + '.png" class="btn-image btn-download" style="font-size: 11px; padding: 5px 10px;">⬇️ Télécharger</a>' +
+                            '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(imageUrl) + '\')" style="font-size: 11px; padding: 5px 10px;">📋 Copier URL</button>' +
+                        '</div>' +
+                    '</div>';
+            }
+            
+            container.innerHTML = imagesHTML;
+            generatedSection.classList.remove('hidden');
         }
 
         async function openProductModal(productId) {
