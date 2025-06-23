@@ -402,11 +402,26 @@
             padding: 15px;
             text-align: center;
             transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
         }
 
         .packshot-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .packshot-item.selected {
+            transform: none;
+            box-shadow: none;
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: flex-start;
+            gap: 30px;
+            background: #fff;
+            border: 2px solid #667eea;
+            padding: 30px;
+            margin-bottom: 20px;
         }
 
         .packshot-image {
@@ -419,18 +434,161 @@
             justify-content: center;
             margin-bottom: 10px;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .packshot-item.selected .packshot-image {
+            width: 512px;
+            height: 512px;
+            flex-shrink: 0;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .packshot-image img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            transition: all 0.3s ease;
         }
 
         .packshot-label {
             font-weight: 600;
             color: #333;
             text-transform: capitalize;
+            transition: all 0.3s ease;
+        }
+
+        .packshot-item.selected .packshot-label {
+            display: none;
+        }
+
+        .packshot-info {
+            display: none;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .packshot-item.selected .packshot-info {
+            display: block;
+        }
+
+        .packshot-info-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+        }
+
+        .packshot-info-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            color: #333;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .close-expanded {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #666;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .packshot-item.selected .close-expanded {
+            display: block;
+        }
+
+        .close-expanded:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .image-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-image {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-copy {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        .btn-open {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .btn-open:hover {
+            background: #5a32a3;
+            transform: translateY(-2px);
         }
 
         .textures-section {
@@ -999,12 +1157,44 @@
                 for (let i = 0; i < packshotEntries.length; i++) {
                     const angle = packshotEntries[i];
                     const url = product.packshots[angle];
+                    const imageId = 'packshot-' + i;
                     packshotsHTML += 
-                        '<div class="packshot-item">' +
-                            '<div class="packshot-image">' +
+                        '<div class="packshot-item" onclick="expandPackshot(\'' + imageId + '\', \'' + escapeHtml(angle) + '\', \'' + escapeHtml(url) + '\')">' +
+                            '<button class="close-expanded" onclick="event.stopPropagation(); collapsePackshot(\'' + imageId + '\')">&times;</button>' +
+                            '<div class="packshot-image" id="' + imageId + '">' +
                                 '<img src="' + escapeHtml(url) + '" alt="Vue ' + escapeHtml(angle) + '" onerror="this.parentElement.innerHTML=\'❌\'">' +
                             '</div>' +
                             '<div class="packshot-label">' + escapeHtml(angle) + '</div>' +
+                            '<div class="packshot-info">' +
+                                '<h3 class="packshot-info-title">📸 Vue ' + escapeHtml(angle) + '</h3>' +
+                                '<div class="packshot-info-grid">' +
+                                    '<div class="info-row">' +
+                                        '<span class="info-label">🎯 Angle de vue</span>' +
+                                        '<span class="info-value">' + escapeHtml(angle) + '</span>' +
+                                    '</div>' +
+                                    '<div class="info-row">' +
+                                        '<span class="info-label">📐 Résolution</span>' +
+                                        '<span class="info-value">512x512px</span>' +
+                                    '</div>' +
+                                    '<div class="info-row">' +
+                                        '<span class="info-label">🎨 Format</span>' +
+                                        '<span class="info-value">PNG</span>' +
+                                    '</div>' +
+                                    '<div class="info-row">' +
+                                        '<span class="info-label">🔗 URL</span>' +
+                                        '<span class="info-value" style="word-break: break-all; font-size: 0.8rem;">' + escapeHtml(url.substring(0, 50)) + '...</span>' +
+                                    '</div>' +
+                                    '<div class="info-row">' +
+                                        '<span class="info-label">⚡ Générée avec</span>' +
+                                        '<span class="info-value">Veez.ai ' + (product.lora_enabled ? '+ LoRA' : '') + '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="image-actions">' +
+                                    '<a href="' + escapeHtml(url) + '" download="' + escapeHtml(product.name) + '_' + escapeHtml(angle) + '.png" class="btn-image btn-download">⬇️ Télécharger</a>' +
+                                    '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(url) + '\')">📋 Copier URL</button>' +
+                                    '<a href="' + escapeHtml(url) + '" target="_blank" class="btn-image btn-open">🔗 Ouvrir</a>' +
+                                '</div>' +
+                            '</div>' +
                         '</div>';
                 }
                 packshotsGrid.innerHTML = packshotsHTML;
@@ -1039,6 +1229,86 @@
 
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
+        }
+
+        function expandPackshot(imageId, angle, url) {
+            // Réduire toutes les autres images
+            const allPackshots = document.querySelectorAll('.packshot-item');
+            for (let i = 0; i < allPackshots.length; i++) {
+                allPackshots[i].classList.remove('selected');
+            }
+            
+            // Agrandir l'image sélectionnée
+            const selectedItem = document.getElementById(imageId).parentElement;
+            selectedItem.classList.add('selected');
+            
+            // Scroll vers l'image agrandie
+            selectedItem.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+
+        function collapsePackshot(imageId) {
+            const selectedItem = document.getElementById(imageId).parentElement;
+            selectedItem.classList.remove('selected');
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    // Feedback visuel
+                    const originalText = event.target.textContent;
+                    event.target.textContent = '✅ Copié !';
+                    event.target.style.background = '#28a745';
+                    
+                    setTimeout(function() {
+                        event.target.textContent = originalText;
+                        event.target.style.background = '#17a2b8';
+                    }, 2000);
+                }).catch(function() {
+                    // Fallback en cas d'erreur
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                // Fallback pour les navigateurs plus anciens
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                // Feedback visuel
+                const originalText = event.target.textContent;
+                event.target.textContent = '✅ Copié !';
+                event.target.style.background = '#28a745';
+                
+                setTimeout(function() {
+                    event.target.textContent = originalText;
+                    event.target.style.background = '#17a2b8';
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+                event.target.textContent = '❌ Erreur';
+                event.target.style.background = '#dc3545';
+                
+                setTimeout(function() {
+                    event.target.textContent = '📋 Copier URL';
+                    event.target.style.background = '#17a2b8';
+                }, 2000);
+            }
+            
+            document.body.removeChild(textArea);
         }
 
         // Event listeners
