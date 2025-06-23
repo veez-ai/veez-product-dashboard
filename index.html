@@ -955,6 +955,22 @@
 
         // Focus automatique sur le champ token
         document.getElementById('tokenInput').focus();
+        
+        // Fermer le modal en cliquant sur le fond
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('productModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeProductModal();
+                }
+            });
+
+            // Fermer le modal avec Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeProductModal();
+                }
+            });
+        });
     </script>
 </body>
 </html>
@@ -1011,14 +1027,17 @@
             // Afficher les packshots
             const packshotsGrid = document.getElementById('packshotsGrid');
             if (product.packshots && Object.keys(product.packshots).length > 0) {
-                const packshotsHTML = Object.entries(product.packshots).map(([angle, url]) => `
-                    <div class="packshot-item">
-                        <div class="packshot-image">
-                            <img src="${url}" alt="Vue ${angle}" onerror="this.parentElement.innerHTML='❌'">
+                let packshotsHTML = '';
+                for (const [angle, url] of Object.entries(product.packshots)) {
+                    packshotsHTML += `
+                        <div class="packshot-item">
+                            <div class="packshot-image">
+                                <img src="${escapeHtml(url)}" alt="Vue ${escapeHtml(angle)}" onerror="this.parentElement.innerHTML='❌'">
+                            </div>
+                            <div class="packshot-label">${escapeHtml(angle)}</div>
                         </div>
-                        <div class="packshot-label">${angle}</div>
-                    </div>
-                `).join('');
+                    `;
+                }
                 packshotsGrid.innerHTML = packshotsHTML;
             } else {
                 packshotsGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Aucun packshot disponible</div>';
@@ -1029,14 +1048,17 @@
             const texturesGrid = document.getElementById('texturesGrid');
             
             if (product.textures && Object.keys(product.textures).length > 0) {
-                const texturesHTML = Object.entries(product.textures).map(([key, url]) => `
-                    <div class="texture-item">
-                        <div class="texture-image">
-                            <img src="${url}" alt="Texture ${key}" onerror="this.parentElement.innerHTML='❌'">
+                let texturesHTML = '';
+                for (const [key, url] of Object.entries(product.textures)) {
+                    texturesHTML += `
+                        <div class="texture-item">
+                            <div class="texture-image">
+                                <img src="${escapeHtml(url)}" alt="Texture ${escapeHtml(key)}" onerror="this.parentElement.innerHTML='❌'">
+                            </div>
+                            <div class="texture-label">${escapeHtml(key)}</div>
                         </div>
-                        <div class="texture-label">${key}</div>
-                    </div>
-                `).join('');
+                    `;
+                }
                 texturesGrid.innerHTML = texturesHTML;
                 texturesSection.style.display = 'block';
             } else {
@@ -1047,20 +1069,6 @@
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
         }
-
-        // Fermer le modal en cliquant sur le fond
-        document.getElementById('productModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeProductModal();
-            }
-        });
-
-        // Fermer le modal avec Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeProductModal();
-            }
-        });
     </script>
 </body>
 </html>
