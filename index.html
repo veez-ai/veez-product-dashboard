@@ -1566,120 +1566,57 @@
                     apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/';
                 }
 
-                console.log('🎯 Génération image via API réelle');
+                console.log('🎯 Génération image via API réelle (format officiel)');
                 console.log('Product ID:', productId);
                 console.log('Prompt:', prompt);
                 console.log('Aspect ratio:', aspectRatio);
                 console.log('URL API:', apiUrl);
+                console.log('Token:', currentToken.substring(0, 10) + '...');
 
-                // Test des différents formats de données que l'API pourrait attendre
-                console.log('🧪 Test de plusieurs formats de requête...');
-                
-                // Format 1: FormData (actuel)
+                // Vérifier que l'aspect ratio est supporté par l'API
+                const validRatios = ['16:9', '3:2', '5:4', '1:1', '4:5', '2:3', '9:16'];
+                if (!validRatios.includes(aspectRatio)) {
+                    console.warn(`⚠️ Ratio ${aspectRatio} non supporté, utilisation de 1:1`);
+                    aspectRatio = '1:1';
+                }
+
+                // Créer FormData exactement comme dans la documentation
                 const formData = new FormData();
                 formData.append('product_id', productId);
                 formData.append('prompt', prompt);
-                formData.append('aspect_ratio', aspectRatio); // Garder le format original d'abord
+                formData.append('aspect_ratio', aspectRatio);
                 
-                console.log('📤 Tentative 1: FormData avec ratio original');
-                let response = await fetch(apiUrl, {
+                console.log('📤 FormData envoyée (format officiel):');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`   ${key}: ${value}`);
+                }
+
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + currentToken
+                        'Authorization': 'Bearer ' + currentToken // Format Bearer + token
+                        // Pas de Content-Type pour FormData - laissé au navigateur
                     },
                     body: formData
                 });
 
-                console.log('📥 Status tentative 1:', response.status);
-                
-                if (!response.ok && response.status === 400) {
-                    // Format 2: Essayer avec les ratios mappés
-                    console.log('🧪 Tentative 2: FormData avec ratio mappé');
-                    
-                    const formData2 = new FormData();
-                    formData2.append('product_id', productId);
-                    formData2.append('prompt', prompt);
-                    
-                    let mappedRatio = aspectRatio;
-                    if (aspectRatio === '16:9') {
-                        mappedRatio = 'landscape';
-                    } else if (aspectRatio === '9:16') {
-                        mappedRatio = 'portrait';
-                    } else if (aspectRatio === '1:1') {
-                        mappedRatio = 'square';
-                    }
-                    formData2.append('aspect_ratio', mappedRatio);
-                    
-                    console.log('📤 Ratio mappé:', aspectRatio, '→', mappedRatio);
-                    
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken
-                        },
-                        body: formData2
-                    });
-                    
-                    console.log('📥 Status tentative 2:', response.status);
-                }
-                
-                if (!response.ok && response.status === 400) {
-                    // Format 3: JSON au lieu de FormData
-                    console.log('🧪 Tentative 3: JSON au lieu de FormData');
-                    
-                    const jsonData = {
-                        product_id: productId,
-                        prompt: prompt,
-                        aspect_ratio: aspectRatio
-                    };
-                    
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(jsonData)
-                    });
-                    
-                    console.log('📥 Status tentative 3:', response.status);
-                }
-                
-                if (!response.ok && response.status === 400) {
-                    // Format 4: Noms de champs différents
-                    console.log('🧪 Tentative 4: Noms de champs alternatifs');
-                    
-                    const formData4 = new FormData();
-                    formData4.append('productId', productId);  // Sans underscore
-                    formData4.append('description', prompt);   // 'description' au lieu de 'prompt'
-                    formData4.append('ratio', aspectRatio);    // 'ratio' au lieu de 'aspect_ratio'
-                    
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken
-                        },
-                        body: formData4
-                    });
-                    
-                    console.log('📥 Status tentative 4:', response.status);
-                }
+                console.log('📥 Status de la réponse:', response.status);
+                console.log('📥 Headers de la réponse:', Object.fromEntries(response.headers.entries()));
 
-                // Lire la réponse finale
+                // Lire la réponse en tant que texte d'abord pour débugger
                 const responseText = await response.text();
-                console.log('📥 Réponse finale brute:', responseText);
+                console.log('📥 Réponse brute complète:', responseText);
 
                 if (!response.ok) {
-                    console.error('❌ Toutes les tentatives ont échoué');
-                    console.error('❌ Status final:', response.status);
-                    console.error('❌ Réponse finale:', responseText);
+                    console.error('❌ Erreur HTTP:', response.status);
+                    console.error('❌ Réponse:', responseText);
                     
                     // Essayer de parser comme JSON pour voir s'il y a des détails d'erreur
                     try {
                         const errorData = JSON.parse(responseText);
                         const errorMessage = errorData.message || errorData.error || errorData.detail || 'Erreur API inconnue';
                         throw new Error(`Erreur API ${response.status}: ${errorMessage}`);
-                    } catch {
+                    } catch (parseError) {
                         // Si HTML reçu, utiliser simulation
                         if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
                             console.log('📋 HTML reçu, passage en mode simulation');
@@ -1690,45 +1627,66 @@
                     }
                 }
 
-                // Vérifier le content-type
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    console.error('⚠️ Réponse non-JSON reçue:', responseText);
-                    
-                    if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
-                        console.log('📋 HTML reçu au lieu de JSON, passage en mode simulation');
-                        return await simulateImageGeneration(productId, prompt, aspectRatio);
-                    }
-                    
-                    throw new Error('Réponse serveur inattendue (non-JSON): ' + responseText.substring(0, 200));
+                // Essayer de parser la réponse JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('✅ Réponse JSON parsée:', result);
+                } catch (parseError) {
+                    console.error('❌ Impossible de parser JSON:', parseError);
+                    console.log('📋 Réponse non-JSON, utilisation simulation');
+                    return await simulateImageGeneration(productId, prompt, aspectRatio);
                 }
-
-                // Parser la réponse JSON
-                const result = JSON.parse(responseText);
-                console.log('✅ Réponse API génération:', result);
                 
-                // L'API peut retourner directement l'image ou un ID de prédiction
-                if (result.images && result.images.length > 0) {
+                // Analyser la structure selon la documentation officielle
+                console.log('🔍 Analyse de la réponse API (selon doc officielle):');
+                console.log('- Type:', typeof result);
+                console.log('- Clés:', Object.keys(result || {}));
+                console.log('- result.id:', result?.id);
+                console.log('- result.product_id:', result?.product_id);
+                console.log('- result.prompt:', result?.prompt);
+                console.log('- result.images:', result?.images);
+                console.log('- result.date_modification:', result?.date_modification);
+                
+                // Selon la doc, la réponse devrait avoir une propriété "images"
+                if (result.images && Array.isArray(result.images) && result.images.length > 0) {
+                    console.log('✅ Images trouvées dans result.images:', result.images);
                     return {
                         success: true,
-                        imageUrl: result.images[0],
-                        predictionId: result.id
+                        imageUrl: result.images[0], // Premier élément du tableau
+                        predictionId: result.id,
+                        isSimulation: false
                     };
                 } else if (result.id) {
-                    // Si on a un ID, vérifier le statut de la prédiction
-                    console.log('🔄 ID de prédiction reçu:', result.id, 'Vérification du statut...');
+                    // Si on a un ID mais pas d'images, peut-être que la génération est en cours
+                    console.log('🔄 ID de prédiction reçu sans images:', result.id);
+                    console.log('🔄 Vérification du statut de la prédiction...');
                     return await checkPredictionStatus(result.id);
-                } else if (result.url) {
-                    // Parfois l'API retourne directement une URL
-                    return {
-                        success: true,
-                        imageUrl: result.url,
-                        predictionId: result.id
-                    };
                 } else {
-                    console.log('⚠️ Format de réponse inattendu:', result);
-                    throw new Error('Format de réponse API inattendu: ' + JSON.stringify(result));
+                    console.log('⚠️ Format de réponse inattendu par rapport à la doc:', result);
+                    
+                    // Fallback: chercher d'autres propriétés possibles
+                    if (result.output) {
+                        console.log('✅ Fallback: Image trouvée dans result.output');
+                        return {
+                            success: true,
+                            imageUrl: result.output,
+                            predictionId: result.id,
+                            isSimulation: false
+                        };
+                    } else if (result.url) {
+                        console.log('✅ Fallback: Image trouvée dans result.url');
+                        return {
+                            success: true,
+                            imageUrl: result.url,
+                            predictionId: result.id,
+                            isSimulation: false
+                        };
+                    } else {
+                        throw new Error('Format de réponse API inattendu - Images non trouvées: ' + JSON.stringify(result));
+                    }
                 }
+                
             } catch (error) {
                 console.error('❌ Erreur génération API:', error);
                 
