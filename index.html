@@ -377,6 +377,131 @@
             }
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        async function loadProductImage(productId, imageElement) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let imageUrl;
+                
+                if (useRenderProxy) {
+                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
+                } else {
+                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
+                }
+                
+                const response = await fetch(imageUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageObjectURL = URL.createObjectURL(blob);
+                    
+                    const img = document.createElement('img');
+                    img.src = imageObjectURL;
+                    img.alt = 'Preview du produit';
+                    img.onload = () => {
+                        imageElement.innerHTML = '';
+                        imageElement.appendChild(img);
+                    };
+                    img.onerror = () => {
+                        imageElement.innerHTML = '🖼️';
+                        imageElement.classList.remove('loading');
+                    };
+                } else {
+                    imageElement.innerHTML = '📦';
+                    imageElement.classList.remove('loading');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'image:', error);
+                imageElement.innerHTML = '📦';
+                imageElement.classList.remove('loading');
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productsContainer');
+            
+            if (products.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Aucun produit trouvé</h3>
+                        <p>Vous n'avez pas encore créé de produits</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const productsHTML = products.map(product => `
+                <div class="product-card">
+                    <div class="product-image loading" id="image-${product.id}">
+                        Chargement...
+                    </div>
+                    <div class="product-content">
+                        <h3 class="product-title">${escapeHtml(product.name || 'Sans nom')}</h3>
+                        <p class="product-description">${escapeHtml(product.description || 'Aucune description disponible')}</p>
+                        
+                        <div class="product-meta">
+                            <div class="product-id">ID: ${product.id.substring(0, 8)}...</div>
+                            <div class="lora-badge ${product.lora_enabled ? 'lora-enabled' : 'lora-disabled'}">
+                                ${product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé'}
+                            </div>
+                        </div>
+                        
+                        <div class="product-date">
+                            📅 Modifié: ${formatDate(product.date_modification)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
+            
+            // Charger les images de preview de manière asynchrone
+            products.forEach(product => {
+                const imageElement = document.getElementById(`image-${product.id}`);
+                if (imageElement) {
+                    loadProductImage(product.id, imageElement);
+                }
+            });
+        }
+
+        function updateStats(products) {
+            const statsContainer = document.getElementById('statsContainer');
+            const totalProducts = products.length;
+            const loraEnabled = products.filter(p => p.lora_enabled).length;
+            const templatesCount = new Set(products.map(p => p.template_id)).size;
+
+            document.getElementById('totalProducts').textContent = totalProducts;
+            document.getElementById('loraEnabled').textContent = loraEnabled;
+            document.getElementById('templatesCount').textContent = templatesCount;
+
+            statsContainer.style.display = 'block';
+        }
+
         async function loadProducts() {
             const tokenInput = document.getElementById('tokenInput');
             const token = tokenInput.value.trim();
@@ -399,11 +524,9 @@
                 };
 
                 if (useRenderProxy) {
-                    // Utiliser le serveur proxy Render
                     apiUrl = 'https://veez-api-proxy.onrender.com/api/product/';
                     showStatus('Connexion via le serveur proxy Render...', 'loading');
                 } else {
-                    // Tentative avec proxy CORS public
                     const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
                     apiUrl = proxyUrl + 'https://app.veez.ai/api/product/';
                     headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -485,150 +608,6 @@
             `;
         }
 
-        async function loadProductImage(productId, imageElement) {
-            try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let imageUrl;
-                
-                if (useRenderProxy) {
-                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
-                } else {
-                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
-                }
-                
-                const response = await fetch(imageUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const imageObjectURL = URL.createObjectURL(blob);
-                    
-                    const img = document.createElement('img');
-                    img.src = imageObjectURL;
-                    img.alt = 'Preview du produit';
-                    img.onload = () => {
-                        imageElement.innerHTML = '';
-                        imageElement.appendChild(img);
-                    };
-                    img.onerror = () => {
-                        imageElement.innerHTML = '🖼️';
-                        imageElement.classList.remove('loading');
-                    };
-                } else {
-                    imageElement.innerHTML = '📦';
-                    imageElement.classList.remove('loading');
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement de l\'image:', error);
-                imageElement.innerHTML = '📦';
-                imageElement.classList.remove('loading');
-            }
-        }
-            const container = document.getElementById('productsContainer');
-            
-            if (products.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Aucun produit trouvé</h3>
-                        <p>Vous n'avez pas encore créé de produits</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const productsHTML = products.map(product => `
-                <div class="product-card">
-                    <div class="product-image loading" id="image-${product.id}">
-                        Chargement...
-                    </div>
-                    <div class="product-content">
-                        <h3 class="product-title">${escapeHtml(product.name || 'Sans nom')}</h3>
-                        <p class="product-description">${escapeHtml(product.description || 'Aucune description disponible')}</p>
-                        
-                        <div class="product-meta">
-                            <div class="product-id">ID: ${product.id.substring(0, 8)}...</div>
-                            <div class="lora-badge ${product.lora_enabled ? 'lora-enabled' : 'lora-disabled'}">
-                                ${product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé'}
-                            </div>
-                        </div>
-                        
-                        <div class="product-date">
-                            📅 Modifié: ${formatDate(product.date_modification)}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            container.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
-            
-            // Charger les images de preview de manière asynchrone
-            products.forEach(product => {
-                const imageElement = document.getElementById(`image-${product.id}`);
-                if (imageElement) {
-                    loadProductImage(product.id, imageElement);
-                }
-            });
-        }
-
-        async function loadProductImage(productId, imageElement) {
-            try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let imageUrl;
-                
-                if (useRenderProxy) {
-                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
-                } else {
-                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
-                }
-                
-                const response = await fetch(imageUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const imageObjectURL = URL.createObjectURL(blob);
-                    
-                    const img = document.createElement('img');
-                    img.src = imageObjectURL;
-                    img.alt = 'Preview du produit';
-                    img.onload = () => {
-                        imageElement.innerHTML = '';
-                        imageElement.appendChild(img);
-                    };
-                    img.onerror = () => {
-                        imageElement.innerHTML = '🖼️';
-                        imageElement.classList.remove('loading');
-                    };
-                } else {
-                    imageElement.innerHTML = '📦';
-                    imageElement.classList.remove('loading');
-                }
-            } catch (error) {
-                console.error('Erreur lors du chargement de l\'image:', error);
-                imageElement.innerHTML = '📦';
-                imageElement.classList.remove('loading');
-            }
-        }
-            const statsContainer = document.getElementById('statsContainer');
-            const totalProducts = products.length;
-            const loraEnabled = products.filter(p => p.lora_enabled).length;
-            const templatesCount = new Set(products.map(p => p.template_id)).size;
-
-            document.getElementById('totalProducts').textContent = totalProducts;
-            document.getElementById('loraEnabled').textContent = loraEnabled;
-            document.getElementById('templatesCount').textContent = templatesCount;
-
-            statsContainer.style.display = 'block';
-        }
-
         function clearData() {
             document.getElementById('tokenInput').value = '';
             document.getElementById('productsContainer').innerHTML = `
@@ -643,29 +622,7 @@
             currentToken = '';
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (error) {
-                return dateString;
-            }
-        }
-
         function showExampleData() {
-            // Données d'exemple basées sur la documentation API
             const exampleProducts = [
                 {
                     "id": "b01a9ff690428a78640fb0f738283a77",
