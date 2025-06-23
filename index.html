@@ -401,15 +401,17 @@
         async function loadProductImage(productId, imageElement) {
             try {
                 const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let imageUrl;
+                let apiUrl;
                 
                 if (useRenderProxy) {
-                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
+                    apiUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}`;
                 } else {
-                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
+                    apiUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}`;
                 }
                 
-                const response = await fetch(imageUrl, {
+                console.log(`Récupération détails produit: ${productId}`);
+                
+                const response = await fetch(apiUrl, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
@@ -417,26 +419,61 @@
                 });
                 
                 if (response.ok) {
-                    const blob = await response.blob();
-                    const imageObjectURL = URL.createObjectURL(blob);
+                    const productData = await response.json();
+                    console.log(`Données produit ${productId}:`, productData);
                     
-                    const img = document.createElement('img');
-                    img.src = imageObjectURL;
-                    img.alt = 'Preview du produit';
-                    img.onload = () => {
-                        imageElement.innerHTML = '';
-                        imageElement.appendChild(img);
-                    };
-                    img.onerror = () => {
-                        imageElement.innerHTML = '🖼️';
+                    if (productData.packshots && Object.keys(productData.packshots).length > 0) {
+                        // Prendre la première image des packshots disponibles
+                        const firstPackshotKey = Object.keys(productData.packshots)[0];
+                        const imageUrl = productData.packshots[firstPackshotKey];
+                        
+                        console.log(`Image trouvée pour ${productId}: ${imageUrl}`);
+                        
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = 'Preview du produit';
+                        img.onload = () => {
+                            imageElement.innerHTML = '';
+                            imageElement.appendChild(img);
+                            console.log(`✅ Image packshot chargée: ${firstPackshotKey}`);
+                        };
+                        img.onerror = () => {
+                            console.log(`❌ Erreur chargement image: ${imageUrl}`);
+                            imageElement.innerHTML = '🖼️';
+                            imageElement.classList.remove('loading');
+                        };
+                    } else if (productData.textures && Object.keys(productData.textures).length > 0) {
+                        // Si pas de packshots, essayer les textures
+                        const firstTextureKey = Object.keys(productData.textures)[0];
+                        const imageUrl = productData.textures[firstTextureKey];
+                        
+                        console.log(`Texture trouvée pour ${productId}: ${imageUrl}`);
+                        
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = 'Texture du produit';
+                        img.onload = () => {
+                            imageElement.innerHTML = '';
+                            imageElement.appendChild(img);
+                            console.log(`✅ Image texture chargée: ${firstTextureKey}`);
+                        };
+                        img.onerror = () => {
+                            console.log(`❌ Erreur chargement texture: ${imageUrl}`);
+                            imageElement.innerHTML = '🎨';
+                            imageElement.classList.remove('loading');
+                        };
+                    } else {
+                        console.log(`❌ Aucune image trouvée pour ${productId}`);
+                        imageElement.innerHTML = '📦';
                         imageElement.classList.remove('loading');
-                    };
+                    }
                 } else {
+                    console.log(`❌ Erreur API ${response.status} pour ${productId}`);
                     imageElement.innerHTML = '📦';
                     imageElement.classList.remove('loading');
                 }
             } catch (error) {
-                console.error('Erreur lors du chargement de l\'image:', error);
+                console.error(`Erreur chargement produit ${productId}:`, error);
                 imageElement.innerHTML = '📦';
                 imageElement.classList.remove('loading');
             }
