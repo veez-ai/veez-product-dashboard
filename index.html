@@ -152,7 +152,7 @@
 
         .product-image {
             width: 100%;
-            height: 300px; /* Augmenté pour format carré */
+            height: 300px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             display: flex;
             align-items: center;
@@ -183,7 +183,6 @@
             color: #999;
         }
 
-        /* Effet spécial pour les PNG transparents */
         .product-image.transparent {
             background: linear-gradient(45deg, 
                 rgba(255,255,255,0.8) 25%, 
@@ -304,7 +303,7 @@
             opacity: 0.8;
         }
 
-        /* Modal pour la page produit */
+        /* Modal styles */
         .product-modal {
             display: none;
             position: fixed;
@@ -485,6 +484,23 @@
         }
 
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .token-input {
+                flex-direction: column;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
             .product-detail {
                 margin: 10px;
                 max-height: 95vh;
@@ -553,31 +569,31 @@
                 <p>Entrez votre token API pour voir vos produits Veez.ai</p>
             </div>
         </div>
-        
-        <!-- Modal pour les détails du produit -->
-        <div id="productModal" class="product-modal">
-            <div class="product-detail">
-                <div class="product-detail-header">
-                    <button class="close-modal" onclick="closeProductModal()">&times;</button>
-                    <h2 class="product-detail-title" id="modalProductTitle">Nom du produit</h2>
-                    <p class="product-detail-description" id="modalProductDescription">Description</p>
-                    <div class="product-detail-meta">
-                        <div class="product-id" id="modalProductId">ID: abc123</div>
-                        <div class="lora-badge" id="modalLoraStatus">LoRA</div>
-                        <div class="product-date" id="modalProductDate">Date</div>
-                    </div>
+    </div>
+
+    <!-- Modal pour les détails du produit -->
+    <div id="productModal" class="product-modal">
+        <div class="product-detail">
+            <div class="product-detail-header">
+                <button class="close-modal" onclick="closeProductModal()">&times;</button>
+                <h2 class="product-detail-title" id="modalProductTitle">Nom du produit</h2>
+                <p class="product-detail-description" id="modalProductDescription">Description</p>
+                <div class="product-detail-meta">
+                    <div class="product-id" id="modalProductId">ID: abc123</div>
+                    <div class="lora-badge" id="modalLoraStatus">LoRA</div>
+                    <div class="product-date" id="modalProductDate">Date</div>
                 </div>
-                <div class="product-detail-body">
-                    <div class="section-title">🎨 Rendus 3D (Packshots)</div>
-                    <div id="packshotsGrid" class="packshots-grid">
-                        <!-- Les packshots seront ajoutés ici -->
-                    </div>
-                    
-                    <div class="textures-section" id="texturesSection" style="display: none;">
-                        <div class="section-title">🖼️ Textures</div>
-                        <div id="texturesGrid" class="textures-grid">
-                            <!-- Les textures seront ajoutées ici -->
-                        </div>
+            </div>
+            <div class="product-detail-body">
+                <div class="section-title">🎨 Rendus 3D (Packshots)</div>
+                <div id="packshotsGrid" class="packshots-grid">
+                    <!-- Les packshots seront ajoutés ici -->
+                </div>
+                
+                <div class="textures-section" id="texturesSection" style="display: none;">
+                    <div class="section-title">🖼️ Textures</div>
+                    <div id="texturesGrid" class="textures-grid">
+                        <!-- Les textures seront ajoutées ici -->
                     </div>
                 </div>
             </div>
@@ -591,7 +607,7 @@
         function showStatus(message, type = 'loading') {
             const statusDiv = document.getElementById('status');
             statusDiv.innerHTML = message;
-            statusDiv.className = `status ${type}`;
+            statusDiv.className = 'status ' + type;
             statusDiv.style.display = 'block';
         }
 
@@ -639,94 +655,86 @@
                 let apiUrl;
                 
                 if (useRenderProxy) {
-                    apiUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}`;
+                    apiUrl = 'https://veez-api-proxy.onrender.com/api/product/' + productId;
                 } else {
-                    apiUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}`;
+                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/' + productId;
                 }
                 
-                console.log(`Récupération détails produit: ${productId}`);
+                console.log('Récupération détails produit:', productId);
                 
                 const response = await fetch(apiUrl, {
                     headers: {
-                        'Authorization': `Bearer ${currentToken}`,
+                        'Authorization': 'Bearer ' + currentToken,
                         'Content-Type': 'application/json'
                     }
                 });
                 
                 if (response.ok) {
                     const productData = await response.json();
-                    console.log(`Données produit ${productId}:`, productData);
+                    console.log('Données produit ' + productId + ':', productData);
                     
                     if (productData.packshots && Object.keys(productData.packshots).length > 0) {
-                        // Prendre la première image des packshots disponibles
                         const firstPackshotKey = Object.keys(productData.packshots)[0];
                         const imageUrl = productData.packshots[firstPackshotKey];
                         
-                        console.log(`Image trouvée pour ${productId}: ${imageUrl}`);
+                        console.log('Image trouvée pour ' + productId + ': ' + imageUrl);
                         
                         const img = document.createElement('img');
                         img.src = imageUrl;
                         img.alt = 'Preview du produit';
-                        img.onload = () => {
+                        img.onclick = function() { openProductModal(productId); };
+                        img.onload = function() {
                             imageElement.innerHTML = '';
                             imageElement.appendChild(img);
                             
-                            // Rendre l'image cliquable
-                            img.onclick = () => openProductModal(productId);
-                            
-                            // Détection PNG transparent et application du style
                             if (imageUrl.toLowerCase().includes('.png')) {
                                 imageElement.classList.add('transparent');
                             }
                             
-                            console.log(`✅ Image packshot chargée: ${firstPackshotKey}`);
+                            console.log('✅ Image packshot chargée: ' + firstPackshotKey);
                         };
-                        img.onerror = () => {
-                            console.log(`❌ Erreur chargement image: ${imageUrl}`);
+                        img.onerror = function() {
+                            console.log('❌ Erreur chargement image: ' + imageUrl);
                             imageElement.innerHTML = '🖼️';
                             imageElement.classList.remove('loading');
                         };
                     } else if (productData.textures && Object.keys(productData.textures).length > 0) {
-                        // Si pas de packshots, essayer les textures
                         const firstTextureKey = Object.keys(productData.textures)[0];
                         const imageUrl = productData.textures[firstTextureKey];
                         
-                        console.log(`Texture trouvée pour ${productId}: ${imageUrl}`);
+                        console.log('Texture trouvée pour ' + productId + ': ' + imageUrl);
                         
                         const img = document.createElement('img');
                         img.src = imageUrl;
                         img.alt = 'Texture du produit';
-                        img.onload = () => {
+                        img.onclick = function() { openProductModal(productId); };
+                        img.onload = function() {
                             imageElement.innerHTML = '';
                             imageElement.appendChild(img);
                             
-                            // Rendre l'image cliquable
-                            img.onclick = () => openProductModal(productId);
-                            
-                            // Détection PNG transparent et application du style
                             if (imageUrl.toLowerCase().includes('.png')) {
                                 imageElement.classList.add('transparent');
                             }
                             
-                            console.log(`✅ Image texture chargée: ${firstTextureKey}`);
+                            console.log('✅ Image texture chargée: ' + firstTextureKey);
                         };
-                        img.onerror = () => {
-                            console.log(`❌ Erreur chargement texture: ${imageUrl}`);
+                        img.onerror = function() {
+                            console.log('❌ Erreur chargement texture: ' + imageUrl);
                             imageElement.innerHTML = '🎨';
                             imageElement.classList.remove('loading');
                         };
                     } else {
-                        console.log(`❌ Aucune image trouvée pour ${productId}`);
+                        console.log('❌ Aucune image trouvée pour ' + productId);
                         imageElement.innerHTML = '📦';
                         imageElement.classList.remove('loading');
                     }
                 } else {
-                    console.log(`❌ Erreur API ${response.status} pour ${productId}`);
+                    console.log('❌ Erreur API ' + response.status + ' pour ' + productId);
                     imageElement.innerHTML = '📦';
                     imageElement.classList.remove('loading');
                 }
             } catch (error) {
-                console.error(`Erreur chargement produit ${productId}:`, error);
+                console.error('Erreur chargement produit ' + productId + ':', error);
                 imageElement.innerHTML = '📦';
                 imageElement.classList.remove('loading');
             }
@@ -736,58 +744,55 @@
             const container = document.getElementById('productsContainer');
             
             if (products.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Aucun produit trouvé</h3>
-                        <p>Vous n'avez pas encore créé de produits</p>
-                    </div>
-                `;
+                container.innerHTML = '<div class="empty-state"><h3>Aucun produit trouvé</h3><p>Vous n\'avez pas encore créé de produits</p></div>';
                 return;
             }
 
-            const productsHTML = products.map(product => `
-                <div class="product-card">
-                    <div class="product-image loading" id="image-${product.id}">
-                        Chargement...
-                    </div>
-                    <div class="product-content">
-                        <h3 class="product-title">${escapeHtml(product.name || 'Sans nom')}</h3>
-                        <p class="product-description">${escapeHtml(product.description || 'Aucune description disponible')}</p>
-                        
-                        <div class="product-meta">
-                            <div class="product-id">ID: ${product.id.substring(0, 8)}...</div>
-                            <div class="lora-badge ${product.lora_enabled ? 'lora-enabled' : 'lora-disabled'}">
-                                ${product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé'}
-                            </div>
-                        </div>
-                        
-                        <div class="product-date">
-                            📅 Modifié: ${formatDate(product.date_modification)}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            let productsHTML = '';
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                productsHTML += '<div class="product-card">' +
+                    '<div class="product-image loading" id="image-' + product.id + '">Chargement...</div>' +
+                    '<div class="product-content">' +
+                        '<h3 class="product-title">' + escapeHtml(product.name || 'Sans nom') + '</h3>' +
+                        '<p class="product-description">' + escapeHtml(product.description || 'Aucune description disponible') + '</p>' +
+                        '<div class="product-meta">' +
+                            '<div class="product-id">ID: ' + product.id.substring(0, 8) + '...</div>' +
+                            '<div class="lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled') + '">' +
+                                (product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé') +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="product-date">📅 Modifié: ' + formatDate(product.date_modification) + '</div>' +
+                    '</div>' +
+                '</div>';
+            }
 
-            container.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
+            container.innerHTML = '<div class="products-grid">' + productsHTML + '</div>';
             
             // Charger les images de preview de manière asynchrone
-            products.forEach(product => {
-                const imageElement = document.getElementById(`image-${product.id}`);
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                const imageElement = document.getElementById('image-' + product.id);
                 if (imageElement) {
                     loadProductImage(product.id, imageElement);
                 }
-            });
+            }
         }
 
         function updateStats(products) {
             const statsContainer = document.getElementById('statsContainer');
             const totalProducts = products.length;
-            const loraEnabled = products.filter(p => p.lora_enabled).length;
-            const templatesCount = new Set(products.map(p => p.template_id)).size;
+            const loraEnabled = products.filter(function(p) { return p.lora_enabled; }).length;
+            const templateIds = [];
+            for (let i = 0; i < products.length; i++) {
+                if (templateIds.indexOf(products[i].template_id) === -1) {
+                    templateIds.push(products[i].template_id);
+                }
+            }
 
             document.getElementById('totalProducts').textContent = totalProducts;
             document.getElementById('loraEnabled').textContent = loraEnabled;
-            document.getElementById('templatesCount').textContent = templatesCount;
+            document.getElementById('templatesCount').textContent = templateIds.length;
 
             statsContainer.style.display = 'block';
         }
@@ -809,7 +814,7 @@
             try {
                 let apiUrl;
                 let headers = {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': 'Bearer ' + token,
                     'Content-Type': 'application/json'
                 };
 
@@ -835,7 +840,7 @@
                     if (useRenderProxy && (response.status === 500 || response.status === 503)) {
                         throw new Error('Serveur proxy Render temporairement indisponible. Réessayez dans quelques secondes.');
                     }
-                    throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
+                    throw new Error('Erreur API: ' + response.status + ' ' + response.statusText);
                 }
 
                 products = await response.json();
@@ -846,7 +851,7 @@
 
                 displayProducts(products);
                 updateStats(products);
-                showStatus(`${products.length} produits chargés avec succès! ${useRenderProxy ? '(via proxy Render)' : '(via proxy public)'}`, 'success');
+                showStatus(products.length + ' produits chargés avec succès! ' + (useRenderProxy ? '(via proxy Render)' : '(via proxy public)'), 'success');
                 
                 setTimeout(hideStatus, 3000);
 
@@ -859,53 +864,43 @@
         }
 
         function handleCorsError(errorMessage, token, useRenderProxy) {
-            showStatus(`Erreur: ${errorMessage}`, 'error');
+            showStatus('Erreur: ' + errorMessage, 'error');
             
-            const proxyInstructions = useRenderProxy ? `
-                <div style="background: rgba(255,107,107,0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">
-                    <h4>🔧 Serveur proxy Render requis :</h4>
-                    <p>Le serveur proxy doit être accessible sur :</p>
-                    <pre style="background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 5px; font-size: 0.8rem;">https://veez-api-proxy.onrender.com</pre>
-                    <p style="font-size: 0.9rem;">Le serveur peut prendre quelques secondes à démarrer s'il était en veille.</p>
-                </div>
-            ` : '';
+            const proxyInstructions = useRenderProxy ? 
+                '<div style="background: rgba(255,107,107,0.1); padding: 15px; border-radius: 8px; margin: 15px 0;">' +
+                    '<h4>🔧 Serveur proxy Render requis :</h4>' +
+                    '<p>Le serveur proxy doit être accessible sur :</p>' +
+                    '<pre style="background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 5px; font-size: 0.8rem;">https://veez-api-proxy.onrender.com</pre>' +
+                    '<p style="font-size: 0.9rem;">Le serveur peut prendre quelques secondes à démarrer s\'il était en veille.</p>' +
+                '</div>' : '';
 
-            document.getElementById('productsContainer').innerHTML = `
-                <div class="empty-state">
-                    <h3>🚫 Erreur de connexion</h3>
-                    <p>${errorMessage}</p>
-                    
-                    ${proxyInstructions}
-                    
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">
-                        <h4>💡 Solutions alternatives :</h4>
-                        <br>
-                        <strong>1. Utiliser cURL (recommandé) :</strong>
-                        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 0.9rem;">curl -s -H "Authorization: Bearer ${token}" https://app.veez.ai/api/product/</pre>
-                        
-                        <strong>2. Extension de navigateur :</strong>
-                        <p>Installer une extension comme "CORS Unblock" pour Chrome/Firefox</p>
-                        
-                        <strong>3. Serveur proxy Render :</strong>
-                        <p>Cochez la case ci-dessus et utilisez le serveur hébergé sur Render</p>
-                        
-                        <strong>4. Outils de développement :</strong>
-                        <p>Postman, Insomnia, Thunder Client (VS Code)</p>
-                    </div>
-                    
-                    <button class="btn btn-secondary" onclick="showExampleData()">Voir un exemple de données</button>
-                </div>
-            `;
+            document.getElementById('productsContainer').innerHTML = 
+                '<div class="empty-state">' +
+                    '<h3>🚫 Erreur de connexion</h3>' +
+                    '<p>' + errorMessage + '</p>' +
+                    proxyInstructions +
+                    '<div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left;">' +
+                        '<h4>💡 Solutions alternatives :</h4><br>' +
+                        '<strong>1. Utiliser cURL (recommandé) :</strong>' +
+                        '<pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 0.9rem;">curl -s -H "Authorization: Bearer ' + token + '" https://app.veez.ai/api/product/</pre>' +
+                        '<strong>2. Extension de navigateur :</strong>' +
+                        '<p>Installer une extension comme "CORS Unblock" pour Chrome/Firefox</p>' +
+                        '<strong>3. Serveur proxy Render :</strong>' +
+                        '<p>Cochez la case ci-dessus et utilisez le serveur hébergé sur Render</p>' +
+                        '<strong>4. Outils de développement :</strong>' +
+                        '<p>Postman, Insomnia, Thunder Client (VS Code)</p>' +
+                    '</div>' +
+                    '<button class="btn btn-secondary" onclick="showExampleData()">Voir un exemple de données</button>' +
+                '</div>';
         }
 
         function clearData() {
             document.getElementById('tokenInput').value = '';
-            document.getElementById('productsContainer').innerHTML = `
-                <div class="empty-state">
-                    <h3>Prêt à commencer ?</h3>
-                    <p>Entrez votre token API pour voir vos produits Veez.ai</p>
-                </div>
-            `;
+            document.getElementById('productsContainer').innerHTML = 
+                '<div class="empty-state">' +
+                    '<h3>Prêt à commencer ?</h3>' +
+                    '<p>Entrez votre token API pour voir vos produits Veez.ai</p>' +
+                '</div>';
             document.getElementById('statsContainer').style.display = 'none';
             hideStatus();
             products = [];
@@ -946,35 +941,7 @@
             setTimeout(hideStatus, 3000);
         }
 
-        // Gestion de la touche Entrée
-        document.getElementById('tokenInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loadProducts();
-            }
-        });
-
-        // Focus automatique sur le champ token
-        document.getElementById('tokenInput').focus();
-        
-        // Fermer le modal en cliquant sur le fond
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('productModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeProductModal();
-                }
-            });
-
-            // Fermer le modal avec Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeProductModal();
-                }
-            });
-        });
-    </script>
-</body>
-</html>
-
+        // Fonctions pour le modal
         async function openProductModal(productId) {
             const modal = document.getElementById('productModal');
             modal.classList.add('active');
@@ -988,14 +955,14 @@
                 let apiUrl;
                 
                 if (useRenderProxy) {
-                    apiUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}`;
+                    apiUrl = 'https://veez-api-proxy.onrender.com/api/product/' + productId;
                 } else {
-                    apiUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}`;
+                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/' + productId;
                 }
                 
                 const response = await fetch(apiUrl, {
                     headers: {
-                        'Authorization': `Bearer ${currentToken}`,
+                        'Authorization': 'Bearer ' + currentToken,
                         'Content-Type': 'application/json'
                     }
                 });
@@ -1004,7 +971,7 @@
                     const productData = await response.json();
                     displayProductModal(productData);
                 } else {
-                    throw new Error(`Erreur ${response.status}`);
+                    throw new Error('Erreur ' + response.status);
                 }
             } catch (error) {
                 console.error('Erreur chargement produit:', error);
@@ -1017,26 +984,28 @@
             // Mettre à jour les informations du produit
             document.getElementById('modalProductTitle').textContent = product.name || 'Sans nom';
             document.getElementById('modalProductDescription').textContent = product.description || 'Aucune description disponible';
-            document.getElementById('modalProductId').textContent = `ID: ${product.id.substring(0, 8)}...`;
-            document.getElementById('modalProductDate').textContent = `📅 Modifié: ${formatDate(product.date_modification)}`;
+            document.getElementById('modalProductId').textContent = 'ID: ' + product.id.substring(0, 8) + '...';
+            document.getElementById('modalProductDate').textContent = '📅 Modifié: ' + formatDate(product.date_modification);
             
             const loraStatus = document.getElementById('modalLoraStatus');
             loraStatus.textContent = product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
-            loraStatus.className = `lora-badge ${product.lora_enabled ? 'lora-enabled' : 'lora-disabled'}`;
+            loraStatus.className = 'lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled');
             
             // Afficher les packshots
             const packshotsGrid = document.getElementById('packshotsGrid');
             if (product.packshots && Object.keys(product.packshots).length > 0) {
                 let packshotsHTML = '';
-                for (const [angle, url] of Object.entries(product.packshots)) {
-                    packshotsHTML += `
-                        <div class="packshot-item">
-                            <div class="packshot-image">
-                                <img src="${escapeHtml(url)}" alt="Vue ${escapeHtml(angle)}" onerror="this.parentElement.innerHTML='❌'">
-                            </div>
-                            <div class="packshot-label">${escapeHtml(angle)}</div>
-                        </div>
-                    `;
+                const packshotEntries = Object.keys(product.packshots);
+                for (let i = 0; i < packshotEntries.length; i++) {
+                    const angle = packshotEntries[i];
+                    const url = product.packshots[angle];
+                    packshotsHTML += 
+                        '<div class="packshot-item">' +
+                            '<div class="packshot-image">' +
+                                '<img src="' + escapeHtml(url) + '" alt="Vue ' + escapeHtml(angle) + '" onerror="this.parentElement.innerHTML=\'❌\'">' +
+                            '</div>' +
+                            '<div class="packshot-label">' + escapeHtml(angle) + '</div>' +
+                        '</div>';
                 }
                 packshotsGrid.innerHTML = packshotsHTML;
             } else {
@@ -1049,15 +1018,17 @@
             
             if (product.textures && Object.keys(product.textures).length > 0) {
                 let texturesHTML = '';
-                for (const [key, url] of Object.entries(product.textures)) {
-                    texturesHTML += `
-                        <div class="texture-item">
-                            <div class="texture-image">
-                                <img src="${escapeHtml(url)}" alt="Texture ${escapeHtml(key)}" onerror="this.parentElement.innerHTML='❌'">
-                            </div>
-                            <div class="texture-label">${escapeHtml(key)}</div>
-                        </div>
-                    `;
+                const textureEntries = Object.keys(product.textures);
+                for (let i = 0; i < textureEntries.length; i++) {
+                    const key = textureEntries[i];
+                    const url = product.textures[key];
+                    texturesHTML += 
+                        '<div class="texture-item">' +
+                            '<div class="texture-image">' +
+                                '<img src="' + escapeHtml(url) + '" alt="Texture ' + escapeHtml(key) + '" onerror="this.parentElement.innerHTML=\'❌\'">' +
+                            '</div>' +
+                            '<div class="texture-label">' + escapeHtml(key) + '</div>' +
+                        '</div>';
                 }
                 texturesGrid.innerHTML = texturesHTML;
                 texturesSection.style.display = 'block';
@@ -1069,6 +1040,30 @@
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
         }
+
+        // Event listeners
+        document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadProducts();
+            }
+        });
+
+        // Fermer le modal en cliquant sur le fond
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Fermer le modal avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProductModal();
+            }
+        });
+
+        // Focus automatique sur le champ token
+        document.getElementById('tokenInput').focus();
     </script>
 </body>
-</html>
+</html>'
