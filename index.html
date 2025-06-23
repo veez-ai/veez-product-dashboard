@@ -1542,59 +1542,84 @@
                     apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/';
                 }
 
-                console.log('Génération image pour produit:', productId);
+                console.log('🎯 Génération image via API réelle');
+                console.log('Product ID:', productId);
                 console.log('Prompt:', prompt);
                 console.log('Aspect ratio:', aspectRatio);
                 console.log('URL API:', apiUrl);
 
+                // Créer FormData avec les bons noms de champs
                 const formData = new FormData();
                 formData.append('product_id', productId);
                 formData.append('prompt', prompt);
-                formData.append('aspect_ratio', aspectRatio);
+                
+                // Vérifier le format d'aspect ratio attendu par l'API
+                let apiAspectRatio = aspectRatio;
+                if (aspectRatio === '16:9') {
+                    apiAspectRatio = 'landscape';
+                } else if (aspectRatio === '9:16') {
+                    apiAspectRatio = 'portrait';
+                } else if (aspectRatio === '1:1') {
+                    apiAspectRatio = 'square';
+                } else {
+                    // Garder le format ratio pour les autres cas
+                    apiAspectRatio = aspectRatio;
+                }
+                formData.append('aspect_ratio', apiAspectRatio);
 
-                console.log('FormData préparée, envoi de la requête...');
+                // Debug: afficher ce qui est envoyé
+                console.log('📤 FormData envoyée:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`   ${key}: ${value}`);
+                }
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + currentToken
+                        // Ne pas définir Content-Type, le navigateur le fait automatiquement pour FormData
                     },
                     body: formData
                 });
 
-                console.log('Status de la réponse:', response.status);
-                console.log('Headers de la réponse:', response.headers.get('content-type'));
+                console.log('📥 Status de la réponse:', response.status);
+                console.log('📥 Headers de la réponse:', response.headers.get('content-type'));
+
+                // Lire la réponse en tant que texte d'abord pour débugger
+                const responseText = await response.text();
+                console.log('📥 Réponse brute:', responseText);
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Erreur HTTP:', response.status, errorText);
+                    console.error('❌ Erreur HTTP:', response.status);
+                    console.error('❌ Réponse:', responseText);
                     
-                    // Si c'est une erreur de proxy, proposer une simulation
-                    if (errorText.includes('<!DOCTYPE html>') || errorText.includes('<html')) {
-                        console.log('Serveur proxy non configuré pour /api/prediction/, utilisation du mode simulation');
-                        return await simulateImageGeneration(productId, prompt, aspectRatio);
+                    // Essayer de parser comme JSON pour voir s'il y a des détails d'erreur
+                    try {
+                        const errorData = JSON.parse(responseText);
+                        const errorMessage = errorData.message || errorData.error || 'Erreur API inconnue';
+                        throw new Error(`Erreur API ${response.status}: ${errorMessage}`);
+                    } catch {
+                        throw new Error(`Erreur API ${response.status}: ${responseText}`);
                     }
-                    
-                    throw new Error('Erreur API: ' + response.status + ' - ' + errorText);
                 }
 
                 // Vérifier le content-type
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
-                    const responseText = await response.text();
-                    console.error('Réponse non-JSON reçue:', responseText);
+                    console.error('⚠️ Réponse non-JSON reçue:', responseText);
                     
                     // Si on reçoit du HTML, utiliser la simulation
                     if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
-                        console.log('HTML reçu au lieu de JSON, passage en mode simulation');
+                        console.log('📋 HTML reçu au lieu de JSON, passage en mode simulation');
                         return await simulateImageGeneration(productId, prompt, aspectRatio);
                     }
                     
-                    throw new Error('Réponse serveur inattendue (HTML au lieu de JSON). Le serveur proxy pourrait avoir un problème.');
+                    throw new Error('Réponse serveur inattendue (non-JSON): ' + responseText.substring(0, 200));
                 }
 
-                const result = await response.json();
-                console.log('Réponse API génération:', result);
+                // Parser la réponse JSON
+                const result = JSON.parse(responseText);
+                console.log('✅ Réponse API génération:', result);
                 
                 // L'API peut retourner directement l'image ou un ID de prédiction
                 if (result.images && result.images.length > 0) {
@@ -1604,18 +1629,26 @@
                         predictionId: result.id
                     };
                 } else if (result.id) {
-                    // Si on a un ID, on peut récupérer le résultat
-                    console.log('ID de prédiction reçu:', result.id, 'Vérification du statut...');
+                    // Si on a un ID, vérifier le statut de la prédiction
+                    console.log('🔄 ID de prédiction reçu:', result.id, 'Vérification du statut...');
                     return await checkPredictionStatus(result.id);
+                } else if (result.url) {
+                    // Parfois l'API retourne directement une URL
+                    return {
+                        success: true,
+                        imageUrl: result.url,
+                        predictionId: result.id
+                    };
                 } else {
-                    throw new Error('Format de réponse inattendu: ' + JSON.stringify(result));
+                    console.log('⚠️ Format de réponse inattendu:', result);
+                    throw new Error('Format de réponse API inattendu: ' + JSON.stringify(result));
                 }
             } catch (error) {
-                console.error('Erreur génération API:', error);
+                console.error('❌ Erreur génération API:', error);
                 
                 // En cas d'erreur réseau, proposer la simulation
                 if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-                    console.log('Erreur réseau, passage en mode simulation');
+                    console.log('📋 Erreur réseau, passage en mode simulation');
                     return await simulateImageGeneration(productId, prompt, aspectRatio);
                 }
                 
@@ -1626,7 +1659,78 @@
             }
         }
 
-        // Fonction de simulation pour tester l'interface
+        // Fonction pour vérifier le statut d'une prédiction
+        async function checkPredictionStatus(predictionId, maxAttempts = 30) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let apiUrl;
+                
+                if (useRenderProxy) {
+                    apiUrl = `https://veez-api-proxy.onrender.com/api/prediction/${predictionId}`;
+                } else {
+                    apiUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/${predictionId}`;
+                }
+
+                console.log('🔄 Vérification du statut de la prédiction:', predictionId);
+                
+                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                    console.log(`📊 Tentative ${attempt}/${maxAttempts} - Vérification statut...`);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + currentToken,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('❌ Erreur lors de la vérification:', response.status, errorText);
+                        throw new Error(`Erreur ${response.status}: ${errorText}`);
+                    }
+
+                    const result = await response.json();
+                    console.log(`📊 Statut prédiction (tentative ${attempt}):`, result.status || 'unknown');
+                    
+                    // Statuts possibles : 'pending', 'processing', 'completed', 'failed'
+                    if (result.status === 'completed' || result.status === 'succeeded') {
+                        console.log('✅ Prédiction terminée avec succès !');
+                        
+                        // Retourner l'URL de l'image générée
+                        const imageUrl = result.output || result.images?.[0] || result.url;
+                        if (imageUrl) {
+                            return {
+                                success: true,
+                                imageUrl: imageUrl,
+                                predictionId: predictionId
+                            };
+                        } else {
+                            throw new Error('Image générée mais URL non trouvée dans la réponse: ' + JSON.stringify(result));
+                        }
+                    } else if (result.status === 'failed' || result.status === 'error') {
+                        console.error('❌ Prédiction échouée:', result.error);
+                        throw new Error('Génération échouée: ' + (result.error || 'Erreur inconnue'));
+                    } else {
+                        // Toujours en cours (pending, processing, etc.)
+                        console.log(`⏳ Génération en cours... (${result.status || 'processing'})`);
+                        
+                        // Attendre 2 secondes avant la prochaine vérification
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+                
+                // Timeout atteint
+                throw new Error(`Timeout: La génération prend plus de ${maxAttempts * 2} secondes`);
+                
+            } catch (error) {
+                console.error('❌ Erreur vérification statut:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
         async function simulateImageGeneration(productId, prompt, aspectRatio) {
             console.log('🎭 Mode simulation activé');
             console.log('Simulation génération pour:', { productId, prompt, aspectRatio });
