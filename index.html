@@ -231,34 +231,22 @@
             border-radius: 4px;
         }
 
-        .product-lora {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        .lora-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
-        
-        .product-lora.enabled {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
+
+        .lora-enabled {
+            background: #d4edda;
+            color: #155724;
         }
-        
-        .product-lora.enabled:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        
-        .product-lora.disabled {
-            background: #f3f4f6;
-            color: #6b7280;
-            cursor: not-allowed;
+
+        .lora-disabled {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .product-date {
@@ -397,218 +385,8 @@
             align-items: center;
         }
 
-        /* Mode tabs dans le modal */
-        .modal-tabs {
-            display: flex;
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 30px;
-            gap: 0;
-        }
-        
-        .modal-tab {
-            padding: 15px 30px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            color: #6b7280;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            flex: 1;
-            text-align: center;
-        }
-        
-        .modal-tab.active {
-            color: #7c3aed;
-            border-bottom-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.05);
-        }
-        
-        .modal-tab:hover:not(.active) {
-            color: #4b5563;
-            background: rgba(0, 0, 0, 0.02);
-        }
-
         .product-detail-body {
             padding: 30px;
-        }
-
-        /* Générateur d'images IA */
-        .ai-generator {
-            display: none;
-            padding: 30px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 16px;
-            border: 2px solid #e2e8f0;
-        }
-        
-        .ai-generator.active {
-            display: block;
-        }
-        
-        .prompt-input {
-            width: 100%;
-            padding: 16px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 120px;
-            background: white;
-            transition: border-color 0.3s ease;
-        }
-        
-        .prompt-input:focus {
-            outline: none;
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-        
-        .prompt-label {
-            display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .aspect-ratio-selector {
-            margin: 20px 0;
-        }
-
-        .aspect-ratio-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .aspect-ratio-option {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .aspect-ratio-option:hover {
-            border-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.05);
-        }
-
-        .aspect-ratio-option.selected {
-            border-color: #7c3aed;
-            background: #7c3aed;
-            color: white;
-        }
-        
-        .generate-btn {
-            background: linear-gradient(135deg, #7c3aed, #5b21b6);
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            width: 100%;
-        }
-        
-        .generate-btn:hover {
-            background: linear-gradient(135deg, #5b21b6, #4c1d95);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
-        }
-        
-        .generate-btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .generated-images {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .generated-images.hidden {
-            display: none;
-        }
-
-        .generated-images-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .generated-image-item {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .generated-image-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .generated-image {
-            width: 100%;
-            aspect-ratio: 1;
-            background: #f8f9fa;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .generated-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .generated-image-info {
-            font-size: 12px;
-            color: #6b7280;
-            text-align: center;
-        }
-        
-        .ai-tips {
-            background: rgba(124, 58, 237, 0.05);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
-        }
-        
-        .ai-tips h4 {
-            color: #7c3aed;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .ai-tips ul {
-            margin: 0;
-            padding-left: 16px;
-            font-size: 13px;
-            color: #6b7280;
-        }
-        
-        .ai-tips li {
-            margin-bottom: 4px;
         }
 
         .packshots-grid {
@@ -960,92 +738,21 @@
                 <p class="product-detail-description" id="modalProductDescription">Description</p>
                 <div class="product-detail-meta">
                     <div class="product-id" id="modalProductId">ID: abc123</div>
-                    <div class="product-lora" id="modalLoraStatus">LoRA</div>
+                    <div class="lora-badge" id="modalLoraStatus">LoRA</div>
                     <div class="product-date" id="modalProductDate">Date</div>
                 </div>
             </div>
-            
-            <!-- Onglets du modal -->
-            <div class="modal-tabs">
-                <button class="modal-tab active" onclick="switchModalTab('3d')">
-                    📦 Rendus 3D
-                </button>
-                <button class="modal-tab" id="aiTabBtn" onclick="switchModalTab('ai')" style="display: none;">
-                    🎨 Générateur IA
-                </button>
-            </div>
-            
-            <!-- Contenu 3D -->
-            <div class="modal-content-3d" id="modalContent3D">
-                <div class="product-detail-body">
-                    <div class="section-title">🎨 Rendus 3D (Packshots)</div>
-                    <div id="packshotsGrid" class="packshots-grid">
-                        <!-- Les packshots seront ajoutés ici -->
-                    </div>
-                    
-                    <div class="textures-section" id="texturesSection" style="display: none;">
-                        <div class="section-title">🖼️ Textures</div>
-                        <div id="texturesGrid" class="textures-grid">
-                            <!-- Les textures seront ajoutées ici -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Contenu Générateur IA -->
-            <div class="ai-generator" id="aiGenerator">
-                <label class="prompt-label" for="promptInput">Décrivez votre image :</label>
-                <textarea 
-                    id="promptInput" 
-                    class="prompt-input" 
-                    placeholder="Exemple : Une canette dans un bar, éclairage tamisé, ambiance chaleureuse..."
-                ></textarea>
-
-                <div class="aspect-ratio-selector">
-                    <label class="prompt-label">Format d'image :</label>
-                    <div class="aspect-ratio-grid">
-                        <div class="aspect-ratio-option" data-ratio="16:9">16:9<br><small>Paysage</small></div>
-                        <div class="aspect-ratio-option" data-ratio="3:2">3:2<br><small>Photo</small></div>
-                        <div class="aspect-ratio-option" data-ratio="5:4">5:4<br><small>Portrait</small></div>
-                        <div class="aspect-ratio-option selected" data-ratio="1:1">1:1<br><small>Carré</small></div>
-                        <div class="aspect-ratio-option" data-ratio="4:5">4:5<br><small>Portrait</small></div>
-                        <div class="aspect-ratio-option" data-ratio="2:3">2:3<br><small>Vertical</small></div>
-                        <div class="aspect-ratio-option" data-ratio="9:16">9:16<br><small>Stories</small></div>
-                    </div>
+            <div class="product-detail-body">
+                <div class="section-title">🎨 Rendus 3D (Packshots)</div>
+                <div id="packshotsGrid" class="packshots-grid">
+                    <!-- Les packshots seront ajoutés ici -->
                 </div>
                 
-                <button class="generate-btn" onclick="generateAIImage()">
-                    🎨 Générer l'image (Mode Démo)
-                </button>
-
-                <div style="margin-top: 10px; text-align: center;">
-                    <small style="color: #6b7280;">
-                        🎭 <strong>Mode démo actif</strong> - Configurez le serveur proxy pour l'API réelle
-                        <br>
-                        <button onclick="testAPIConnection()" style="background: none; border: 1px solid #059669; color: #059669; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; margin-right: 5px; cursor: pointer;">
-                            🔍 Tester la connexion
-                        </button>
-                        <button onclick="generateAIImageViaRealAPI()" style="background: none; border: 1px solid #7c3aed; color: #7c3aed; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; cursor: pointer;">
-                            🚀 Tester l'API réelle
-                        </button>
-                    </small>
-                </div>
-
-                <div class="generated-images hidden" id="generatedImages">
-                    <h4 style="color: #374151; margin-bottom: 10px;">🖼️ Images générées :</h4>
-                    <div class="generated-images-grid" id="generatedImagesGrid">
-                        <!-- Les images générées apparaîtront ici -->
+                <div class="textures-section" id="texturesSection" style="display: none;">
+                    <div class="section-title">🖼️ Textures</div>
+                    <div id="texturesGrid" class="textures-grid">
+                        <!-- Les textures seront ajoutées ici -->
                     </div>
-                </div>
-                
-                <div class="ai-tips">
-                    <h4>💡 Conseils pour de meilleurs résultats :</h4>
-                    <ul>
-                        <li>Soyez précis sur l'environnement (bar, cuisine, bureau, nature...)</li>
-                        <li>Spécifiez le style d'éclairage (studio, naturel, dramatique, tamisé...)</li>
-                        <li>Mentionnez l'ambiance souhaitée (moderne, vintage, luxe, décontracté...)</li>
-                        <li>Ajoutez des détails sur la mise en scène (angle, perspective, contexte...)</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -1054,7 +761,6 @@
     <script>
         let currentToken = '';
         let products = [];
-        let currentProductId = null;
 
         function showStatus(message, type = 'loading') {
             const statusDiv = document.getElementById('status');
@@ -1203,8 +909,6 @@
             let productsHTML = '';
             for (let i = 0; i < products.length; i++) {
                 const product = products[i];
-                const loraStatus = product.lora_enabled === true || product.lora_enabled === 'true' || product.lora_enabled === 1;
-                
                 productsHTML += '<div class="product-card">' +
                     '<div class="product-image loading" id="image-' + product.id + '">Chargement...</div>' +
                     '<div class="product-content">' +
@@ -1212,10 +916,9 @@
                         '<p class="product-description">' + escapeHtml(product.description || 'Aucune description disponible') + '</p>' +
                         '<div class="product-meta">' +
                             '<div class="product-id">ID: ' + product.id.substring(0, 8) + '...</div>' +
-                            '<button class="product-lora ' + (loraStatus ? 'enabled' : 'disabled') + '"' + 
-                            (loraStatus ? ' onclick="openAIGenerator(\'' + product.id + '\')"' : '') + '>' +
-                                (loraStatus ? '🎨 LoRA Activé' : '❌ LoRA Désactivé') +
-                            '</button>' +
+                            '<div class="lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled') + '">' +
+                                (product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé') +
+                            '</div>' +
                         '</div>' +
                         '<div class="product-date">📅 Modifié: ' + formatDate(product.date_modification) + '</div>' +
                     '</div>' +
@@ -1237,9 +940,7 @@
         function updateStats(products) {
             const statsContainer = document.getElementById('statsContainer');
             const totalProducts = products.length;
-            const loraEnabled = products.filter(function(p) { 
-                return p.lora_enabled === true || p.lora_enabled === 'true' || p.lora_enabled === 1; 
-            }).length;
+            const loraEnabled = products.filter(function(p) { return p.lora_enabled; }).length;
             const templateIds = [];
             for (let i = 0; i < products.length; i++) {
                 if (templateIds.indexOf(products[i].template_id) === -1) {
@@ -1398,612 +1099,10 @@
             setTimeout(hideStatus, 3000);
         }
 
-        // Fonctions pour le modal et générateur IA
-        function openAIGenerator(productId) {
-            // Ouvrir le modal et aller directement à l'onglet IA
-            currentProductId = productId;
-            console.log('Ouverture générateur IA pour produit:', productId);
-            openProductModal(productId).then(function() {
-                switchModalTab('ai');
-            });
-        }
-        
-        function switchModalTab(tab) {
-            // Gestion des onglets
-            var tabs = document.querySelectorAll('.modal-tab');
-            tabs.forEach(function(t) { t.classList.remove('active'); });
-            
-            if (tab === '3d') {
-                document.querySelector('.modal-tab[onclick*="3d"]').classList.add('active');
-                document.getElementById('modalContent3D').style.display = 'block';
-                document.getElementById('aiGenerator').classList.remove('active');
-            } else if (tab === 'ai') {
-                document.querySelector('.modal-tab[onclick*="ai"]').classList.add('active');
-                document.getElementById('modalContent3D').style.display = 'none';
-                document.getElementById('aiGenerator').classList.add('active');
-            }
-        }
-        
-        function generateAIImage() {
-            var prompt = document.getElementById('promptInput').value.trim();
-            if (!prompt) {
-                alert('Veuillez entrer une description pour générer une image.');
-                return;
-            }
-
-            if (!currentProductId) {
-                alert('Erreur: ID de produit manquant. Debug: currentProductId = ' + currentProductId);
-                console.error('currentProductId manquant:', currentProductId);
-                return;
-            }
-
-            // Récupérer le format sélectionné
-            var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
-            var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
-            
-            console.log('Début génération - Produit:', currentProductId, 'Prompt:', prompt, 'Ratio:', aspectRatio);
-            
-            var btn = document.querySelector('.generate-btn');
-            btn.disabled = true;
-            btn.textContent = '🎨 Génération en cours...';
-            
-            // Masquer les images précédentes
-            document.getElementById('generatedImages').classList.add('hidden');
-            
-            // Pour le moment, utiliser directement la simulation en attendant que le serveur proxy soit configuré
-            console.log('🎭 Utilisation du mode simulation (serveur proxy non configuré pour /api/prediction/)');
-            
-            simulateImageGeneration(currentProductId, prompt, aspectRatio)
-                .then(function(result) {
-                    if (result.success) {
-                        displayGeneratedImages([result.imageUrl], result.isSimulation);
-                        showStatus('🎭 Image de démonstration générée ! Pour utiliser l\'API réelle, configurez le serveur proxy.', 'success');
-                    } else {
-                        throw new Error(result.error || 'Erreur de génération');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Erreur génération:', error);
-                    alert('Erreur lors de la génération: ' + error.message);
-                })
-                .finally(function() {
-                    btn.disabled = false;
-                    btn.textContent = '🎨 Générer l\'image';
-                });
-        }
-
-        function generateAIImageViaRealAPI() {
-            var prompt = document.getElementById('promptInput').value.trim();
-            if (!prompt) {
-                alert('Veuillez entrer une description pour générer une image.');
-                return;
-            }
-
-            if (!currentProductId) {
-                alert('Erreur: ID de produit manquant. Debug: currentProductId = ' + currentProductId);
-                console.error('currentProductId manquant:', currentProductId);
-                return;
-            }
-
-            if (!currentToken) {
-                alert('Erreur: Token d\'authentification manquant. Veuillez vous reconnecter.');
-                console.error('currentToken manquant');
-                return;
-            }
-
-            // Récupérer le format sélectionné
-            var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
-            var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
-            
-            console.log('🚀 DÉBUT TEST API RÉELLE');
-            console.log('Produit:', currentProductId);
-            console.log('Prompt:', prompt);
-            console.log('Ratio:', aspectRatio);
-            console.log('Token:', currentToken ? currentToken.substring(0, 20) + '...' : 'MANQUANT');
-            
-            var btn = document.querySelector('.generate-btn');
-            btn.disabled = true;
-            btn.textContent = '🎨 Test API en cours...';
-            
-            // Masquer les images précédentes
-            document.getElementById('generatedImages').classList.add('hidden');
-            
-            // Appel à l'API Veez.ai pour générer l'image
-            generateImageViaAPI(currentProductId, prompt, aspectRatio)
-                .then(function(result) {
-                    console.log('🎯 Résultat final:', result);
-                    
-                    if (result.success) {
-                        displayGeneratedImages([result.imageUrl], result.isSimulation);
-                        if (result.isSimulation) {
-                            showStatus('🎭 Fallback: Image de démonstration générée (API échouée)', 'warning');
-                        } else {
-                            showStatus('✅ Image générée via API réelle !', 'success');
-                        }
-                    } else {
-                        throw new Error(result.error || 'Erreur de génération');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('❌ Erreur finale génération:', error);
-                    
-                    // Message d'erreur détaillé
-                    let errorMessage = 'Erreur lors de la génération: ' + error.message;
-                    
-                    if (error.message.includes('400')) {
-                        errorMessage += '\n\n🔍 Erreur 400 - Vérifications:\n' +
-                            '• Token d\'authentification valide ?\n' +
-                            '• ID de produit correct ?\n' +
-                            '• Format des paramètres accepté par l\'API ?\n' +
-                            '• Permissions sur ce produit ?';
-                    } else if (error.message.includes('401')) {
-                        errorMessage += '\n\n🔐 Erreur 401 - Problème d\'authentification:\n' +
-                            '• Reconnectez-vous pour obtenir un nouveau token\n' +
-                            '• Vérifiez les permissions de votre compte';
-                    } else if (error.message.includes('HTML au lieu de JSON')) {
-                        errorMessage += '\n\n💡 Solutions:\n' +
-                            '1. Vérifiez que le serveur proxy Render fonctionne\n' +
-                            '2. Essayez de décocher "Utiliser le serveur proxy Render"\n' +
-                            '3. Attendez quelques minutes si le serveur était en veille';
-                    }
-                    
-                    alert(errorMessage);
-                })
-                .finally(function() {
-                    btn.disabled = false;
-                    btn.textContent = '🎨 Générer l\'image (Mode Démo)';
-                });
-        }
-
-        async function generateImageViaAPI(productId, prompt, aspectRatio) {
-            try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let apiUrl;
-                
-                if (useRenderProxy) {
-                    apiUrl = 'https://veez-api-proxy.onrender.com/api/prediction/';
-                } else {
-                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/';
-                }
-
-                console.log('🎯 Génération image via API réelle (format officiel)');
-                console.log('Product ID:', productId);
-                console.log('Prompt:', prompt);
-                console.log('Aspect ratio:', aspectRatio);
-                console.log('URL API:', apiUrl);
-                console.log('Token:', currentToken.substring(0, 10) + '...');
-
-                // Vérifier que l'aspect ratio est supporté par l'API
-                const validRatios = ['16:9', '3:2', '5:4', '1:1', '4:5', '2:3', '9:16'];
-                if (!validRatios.includes(aspectRatio)) {
-                    console.warn(`⚠️ Ratio ${aspectRatio} non supporté, utilisation de 1:1`);
-                    aspectRatio = '1:1';
-                }
-
-                // Créer FormData exactement comme dans la documentation
-                const formData = new FormData();
-                formData.append('product_id', productId);
-                formData.append('prompt', prompt);
-                formData.append('aspect_ratio', aspectRatio);
-                
-                console.log('📤 FormData envoyée (format officiel):');
-                for (let [key, value] of formData.entries()) {
-                    console.log(`   ${key}: ${value}`);
-                }
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + currentToken // Format Bearer + token
-                        // Pas de Content-Type pour FormData - laissé au navigateur
-                    },
-                    body: formData
-                });
-
-                console.log('📥 Status de la réponse:', response.status);
-                console.log('📥 Headers de la réponse:', Object.fromEntries(response.headers.entries()));
-
-                // Lire la réponse en tant que texte d'abord pour débugger
-                const responseText = await response.text();
-                console.log('📥 Réponse brute complète:', responseText);
-
-                if (!response.ok) {
-                    console.error('❌ Erreur HTTP:', response.status);
-                    console.error('❌ Réponse:', responseText);
-                    
-                    // Essayer de parser comme JSON pour voir s'il y a des détails d'erreur
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        const errorMessage = errorData.message || errorData.error || errorData.detail || 'Erreur API inconnue';
-                        throw new Error(`Erreur API ${response.status}: ${errorMessage}`);
-                    } catch (parseError) {
-                        // Si HTML reçu, utiliser simulation
-                        if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
-                            console.log('📋 HTML reçu, passage en mode simulation');
-                            return await simulateImageGeneration(productId, prompt, aspectRatio);
-                        }
-                        
-                        throw new Error(`Erreur API ${response.status}: ${responseText.substring(0, 200)}`);
-                    }
-                }
-
-                // Essayer de parser la réponse JSON
-                let result;
-                try {
-                    result = JSON.parse(responseText);
-                    console.log('✅ Réponse JSON parsée:', result);
-                } catch (parseError) {
-                    console.error('❌ Impossible de parser JSON:', parseError);
-                    console.log('📋 Réponse non-JSON, utilisation simulation');
-                    return await simulateImageGeneration(productId, prompt, aspectRatio);
-                }
-                
-                // Analyser la structure selon la documentation officielle
-                console.log('🔍 Analyse de la réponse API (selon doc officielle):');
-                console.log('- Type:', typeof result);
-                console.log('- Clés:', Object.keys(result || {}));
-                console.log('- result.id:', result?.id);
-                console.log('- result.product_id:', result?.product_id);
-                console.log('- result.prompt:', result?.prompt);
-                console.log('- result.images:', result?.images);
-                console.log('- result.date_modification:', result?.date_modification);
-                
-                // Selon la doc, la réponse devrait avoir une propriété "images"
-                if (result.images && Array.isArray(result.images) && result.images.length > 0) {
-                    console.log('✅ Images trouvées dans result.images:', result.images);
-                    return {
-                        success: true,
-                        imageUrl: result.images[0], // Premier élément du tableau
-                        predictionId: result.id,
-                        isSimulation: false
-                    };
-                } else if (result.id) {
-                    // Si on a un ID mais pas d'images, peut-être que la génération est en cours
-                    console.log('🔄 ID de prédiction reçu sans images:', result.id);
-                    console.log('🔄 Vérification du statut de la prédiction...');
-                    return await checkPredictionStatus(result.id);
-                } else {
-                    console.log('⚠️ Format de réponse inattendu par rapport à la doc:', result);
-                    
-                    // Fallback: chercher d'autres propriétés possibles
-                    if (result.output) {
-                        console.log('✅ Fallback: Image trouvée dans result.output');
-                        return {
-                            success: true,
-                            imageUrl: result.output,
-                            predictionId: result.id,
-                            isSimulation: false
-                        };
-                    } else if (result.url) {
-                        console.log('✅ Fallback: Image trouvée dans result.url');
-                        return {
-                            success: true,
-                            imageUrl: result.url,
-                            predictionId: result.id,
-                            isSimulation: false
-                        };
-                    } else {
-                        throw new Error('Format de réponse API inattendu - Images non trouvées: ' + JSON.stringify(result));
-                    }
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur génération API:', error);
-                
-                // En cas d'erreur réseau, proposer la simulation
-                if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-                    console.log('📋 Erreur réseau, passage en mode simulation');
-                    return await simulateImageGeneration(productId, prompt, aspectRatio);
-                }
-                
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-
-        // Fonction pour renouveler le token d'authentification
-        function refreshAuthToken() {
-            console.log('🔄 Renouvellement du token...');
-            
-            // Simuler la récupération d'un nouveau token depuis l'interface Veez
-            const newToken = prompt(`🔑 Entrez votre nouveau token d'authentification Veez.ai:\n\n💡 Pour obtenir un nouveau token:\n1. Allez sur https://app.veez.ai\n2. Connectez-vous à votre compte\n3. Copiez le token depuis l'interface\n\nToken actuel: ${currentToken ? currentToken.substring(0, 20) + '...' : 'Aucun'}`);
-            
-            if (newToken && newToken.trim()) {
-                const cleanToken = newToken.trim();
-                currentToken = cleanToken;
-                
-                // Sauvegarder dans localStorage pour persistence
-                try {
-                    localStorage.setItem('veez_auth_token', cleanToken);
-                    console.log('✅ Nouveau token sauvegardé');
-                } catch (e) {
-                    console.log('⚠️ Impossible de sauvegarder le token dans localStorage');
-                }
-                
-                alert(`✅ Token mis à jour avec succès !\n\nNouveau token: ${cleanToken.substring(0, 20)}...\n\nVous pouvez maintenant tester la connexion API.`);
-                
-                // Masquer le message d'erreur API s'il était affiché
-                const errorElement = document.querySelector('.error-message');
-                if (errorElement) {
-                    errorElement.style.display = 'none';
-                }
-                
-                console.log('🎯 Token mis à jour:', cleanToken.substring(0, 20) + '...');
-            } else if (newToken !== null) {
-                alert('❌ Token vide ou invalide. Veuillez entrer un token valide.');
-            }
-        }
-        async function testAPIConnection() {
-            console.log('🔍 Test de connexion API...');
-            
-            if (!currentToken) {
-                alert('❌ Token d\'authentification manquant. Veuillez vous reconnecter.');
-                return;
-            }
-            
-            if (!currentProductId) {
-                alert('❌ ID de produit manquant. Ouvrez d\'abord un produit.');
-                return;
-            }
-            
-            try {
-                console.log('🎯 Test multiple des APIs...');
-                
-                // Test 1: API directe sans proxy (pour tester le token)
-                console.log('🧪 Test 1: API directe Veez.ai (test du token)');
-                try {
-                    const directResponse = await fetch(`https://app.veez.ai/api/product/${currentProductId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json'
-                        },
-                        mode: 'no-cors' // Pour éviter CORS mais ne permet pas de lire la réponse
-                    });
-                    console.log('✅ Test direct: Requête envoyée (pas de lecture possible à cause de CORS)');
-                } catch (error) {
-                    console.log('❌ Test direct échoué:', error.message);
-                }
-                
-                // Test 2: Via le serveur proxy Render
-                console.log('🧪 Test 2: Via serveur proxy Render');
-                const renderUrl = `https://veez-api-proxy.onrender.com/api/product/${currentProductId}`;
-                console.log('🌐 Test URL Render:', renderUrl);
-                console.log('🔑 Token:', currentToken.substring(0, 20) + '...');
-                
-                const renderResponse = await fetch(renderUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + currentToken,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                console.log('📊 Status Render:', renderResponse.status);
-                const renderText = await renderResponse.text();
-                console.log('📋 Réponse Render:', renderText.substring(0, 200) + '...');
-                
-                if (renderResponse.ok) {
-                    const data = JSON.parse(renderText);
-                    alert(`✅ Connexion API réussie via Render !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide\n\nVous pouvez maintenant tester l'API de génération !`);
-                    return;
-                } else {
-                    console.log(`❌ Render failed with ${renderResponse.status}: ${renderText}`);
-                }
-                
-                // Test 3: Via CORS-Anywhere (si encore accessible)
-                console.log('🧪 Test 3: Via CORS-Anywhere');
-                try {
-                    const corsUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${currentProductId}`;
-                    const corsResponse = await fetch(corsUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    console.log('📊 Status CORS-Anywhere:', corsResponse.status);
-                    
-                    if (corsResponse.ok) {
-                        const corsText = await corsResponse.text();
-                        const data = JSON.parse(corsText);
-                        alert(`✅ Connexion API réussie via CORS-Anywhere !\n\nProduit: ${data.name || 'N/A'}\nID: ${currentProductId}\nToken: Valide`);
-                        return;
-                    }
-                } catch (corsError) {
-                    console.log('❌ CORS-Anywhere non accessible:', corsError.message);
-                }
-                
-                // Aucun test n'a réussi
-                alert(`❌ Tous les tests de connexion ont échoué\n\n🔍 Diagnostics:\n\n1. Serveur Render: Erreur ${renderResponse.status}\n2. CORS-Anywhere: Bloqué (403)\n3. API directe: CORS bloqué\n\n💡 Solutions:\n• Vérifiez que votre token est encore valide\n• Attendez que le serveur Render redémarre\n• Utilisez le mode démo en attendant\n\n📋 Token actuel: ${currentToken.substring(0, 20)}...`);
-                
-            } catch (error) {
-                console.error('❌ Erreur test connexion:', error);
-                alert(`❌ Erreur de connexion: ${error.message}\n\n🔍 Vérifiez:\n• Votre connexion internet\n• La validité du token\n• L'accessibilité des serveurs proxy`);
-            }
-        }
-        async function checkPredictionStatus(predictionId, maxAttempts = 30) {
-            try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let apiUrl;
-                
-                if (useRenderProxy) {
-                    apiUrl = `https://veez-api-proxy.onrender.com/api/prediction/${predictionId}`;
-                } else {
-                    apiUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/${predictionId}`;
-                }
-
-                console.log('🔄 Vérification du statut de la prédiction:', predictionId);
-                
-                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                    console.log(`📊 Tentative ${attempt}/${maxAttempts} - Vérification statut...`);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('❌ Erreur lors de la vérification:', response.status, errorText);
-                        throw new Error(`Erreur ${response.status}: ${errorText}`);
-                    }
-
-                    const result = await response.json();
-                    console.log(`📊 Statut prédiction (tentative ${attempt}):`, result.status || 'unknown');
-                    
-                    // Statuts possibles : 'pending', 'processing', 'completed', 'failed'
-                    if (result.status === 'completed' || result.status === 'succeeded') {
-                        console.log('✅ Prédiction terminée avec succès !');
-                        
-                        // Retourner l'URL de l'image générée
-                        const imageUrl = result.output || result.images?.[0] || result.url;
-                        if (imageUrl) {
-                            return {
-                                success: true,
-                                imageUrl: imageUrl,
-                                predictionId: predictionId
-                            };
-                        } else {
-                            throw new Error('Image générée mais URL non trouvée dans la réponse: ' + JSON.stringify(result));
-                        }
-                    } else if (result.status === 'failed' || result.status === 'error') {
-                        console.error('❌ Prédiction échouée:', result.error);
-                        throw new Error('Génération échouée: ' + (result.error || 'Erreur inconnue'));
-                    } else {
-                        // Toujours en cours (pending, processing, etc.)
-                        console.log(`⏳ Génération en cours... (${result.status || 'processing'})`);
-                        
-                        // Attendre 2 secondes avant la prochaine vérification
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-                }
-                
-                // Timeout atteint
-                throw new Error(`Timeout: La génération prend plus de ${maxAttempts * 2} secondes`);
-                
-            } catch (error) {
-                console.error('❌ Erreur vérification statut:', error);
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-        async function simulateImageGeneration(productId, prompt, aspectRatio) {
-            console.log('🎭 Mode simulation activé');
-            console.log('Simulation génération pour:', { productId, prompt, aspectRatio });
-            
-            // Simuler un délai de traitement
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Images de démonstration (vous pouvez remplacer par vos propres URLs)
-            const demoImages = [
-                'https://via.placeholder.com/512x512/7c3aed/ffffff?text=Demo+IA+1',
-                'https://via.placeholder.com/512x512/10b981/ffffff?text=Demo+IA+2',
-                'https://via.placeholder.com/512x512/f59e0b/ffffff?text=Demo+IA+3'
-            ];
-            
-            const randomImage = demoImages[Math.floor(Math.random() * demoImages.length)];
-            
-            return {
-                success: true,
-                imageUrl: randomImage,
-                predictionId: 'demo_' + Date.now(),
-                isSimulation: true
-            };
-        }
-
-        async function checkPredictionStatus(predictionId, maxRetries = 10) {
-            try {
-                const useRenderProxy = document.getElementById('useRenderProxy').checked;
-                let apiUrl;
-                
-                if (useRenderProxy) {
-                    apiUrl = 'https://veez-api-proxy.onrender.com/api/prediction/' + predictionId;
-                } else {
-                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/' + predictionId;
-                }
-
-                for (let i = 0; i < maxRetries; i++) {
-                    const response = await fetch(apiUrl, {
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        
-                        if (result.images && result.images.length > 0) {
-                            return {
-                                success: true,
-                                imageUrl: result.images[0],
-                                predictionId: result.id
-                            };
-                        }
-                    }
-
-                    // Attendre 2 secondes avant de réessayer
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-
-                throw new Error('Timeout: la génération prend trop de temps');
-            } catch (error) {
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-
-        function displayGeneratedImages(imageUrls, isSimulation = false) {
-            const container = document.getElementById('generatedImagesGrid');
-            const generatedSection = document.getElementById('generatedImages');
-            
-            let imagesHTML = '';
-            for (let i = 0; i < imageUrls.length; i++) {
-                const imageUrl = imageUrls[i];
-                const simulationBadge = isSimulation ? 
-                    '<div style="position: absolute; top: 5px; right: 5px; background: #f59e0b; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px;">DEMO</div>' : '';
-                
-                imagesHTML += 
-                    '<div class="generated-image-item" style="position: relative;">' +
-                        simulationBadge +
-                        '<div class="generated-image">' +
-                            '<img src="' + escapeHtml(imageUrl) + '" alt="Image générée" onclick="window.open(\'' + escapeHtml(imageUrl) + '\', \'_blank\')" style="cursor: pointer;">' +
-                        '</div>' +
-                        '<div class="generated-image-info">' +
-                            (isSimulation ? 'Image de démonstration' : 'Cliquez pour agrandir') +
-                        '</div>' +
-                        '<div style="margin-top: 10px; display: flex; gap: 5px; justify-content: center;">' +
-                            (isSimulation ? 
-                                '<small style="color: #f59e0b; font-weight: 500;">Mode démo - Configurez le serveur proxy pour l\'API réelle</small>' :
-                                '<a href="' + escapeHtml(imageUrl) + '" download="generated_image_' + (i + 1) + '.png" class="btn-image btn-download" style="font-size: 11px; padding: 5px 10px;">⬇️ Télécharger</a>' +
-                                '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(imageUrl) + '\')" style="font-size: 11px; padding: 5px 10px;">📋 Copier URL</button>'
-                            ) +
-                        '</div>' +
-                    '</div>';
-            }
-            
-            container.innerHTML = imagesHTML;
-            generatedSection.classList.remove('hidden');
-        }
-
+        // Fonctions pour le modal
         async function openProductModal(productId) {
             const modal = document.getElementById('productModal');
             modal.classList.add('active');
-            
-            // Stocker l'ID du produit
-            currentProductId = productId;
-            console.log('Modal ouvert pour produit:', productId);
             
             // Afficher un loader pendant le chargement
             document.getElementById('modalProductTitle').textContent = 'Chargement...';
@@ -2046,21 +1145,9 @@
             document.getElementById('modalProductId').textContent = 'ID: ' + product.id.substring(0, 8) + '...';
             document.getElementById('modalProductDate').textContent = '📅 Modifié: ' + formatDate(product.date_modification);
             
-            // Afficher l'onglet IA seulement si LoRA est activé
-            var aiTabBtn = document.getElementById('aiTabBtn');
-            var hasLora = product.lora_enabled === true || product.lora_enabled === 'true' || product.lora_enabled === 1;
-            if (hasLora) {
-                aiTabBtn.style.display = 'block';
-            } else {
-                aiTabBtn.style.display = 'none';
-            }
-            
-            // Commencer par l'onglet 3D
-            switchModalTab('3d');
-            
             const loraStatus = document.getElementById('modalLoraStatus');
-            loraStatus.textContent = hasLora ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
-            loraStatus.className = 'product-lora ' + (hasLora ? 'enabled' : 'disabled');
+            loraStatus.textContent = product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
+            loraStatus.className = 'lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled');
             
             // Afficher les packshots
             const packshotsGrid = document.getElementById('packshotsGrid');
@@ -2099,7 +1186,7 @@
                                     '</div>' +
                                     '<div class="info-row">' +
                                         '<span class="info-label">⚡ Générée avec</span>' +
-                                        '<span class="info-value">Veez.ai ' + (hasLora ? '+ LoRA' : '') + '</span>' +
+                                        '<span class="info-value">Veez.ai ' + (product.lora_enabled ? '+ LoRA' : '') + '</span>' +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="image-actions">' +
@@ -2142,8 +1229,6 @@
 
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
-            // Reset à l'onglet 3D pour la prochaine ouverture
-            switchModalTab('3d');
         }
 
         function expandPackshot(imageId, angle, url) {
@@ -2247,23 +1332,8 @@
             }
         });
 
-        // Gestion des formats d'image
-        document.addEventListener('DOMContentLoaded', function() {
-            const aspectRatioOptions = document.querySelectorAll('.aspect-ratio-option');
-            aspectRatioOptions.forEach(function(option) {
-                option.addEventListener('click', function() {
-                    // Retirer la sélection de tous les éléments
-                    aspectRatioOptions.forEach(function(opt) {
-                        opt.classList.remove('selected');
-                    });
-                    // Ajouter la sélection à l'élément cliqué
-                    this.classList.add('selected');
-                });
-            });
-        });
-
         // Focus automatique sur le champ token
         document.getElementById('tokenInput').focus();
     </script>
 </body>
-</html>
+</html>'
