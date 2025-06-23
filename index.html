@@ -169,6 +169,11 @@
             object-fit: cover;
         }
 
+        .product-image.loading {
+            font-size: 1rem;
+            color: #999;
+        }
+
         .product-content {
             padding: 20px;
         }
@@ -480,7 +485,49 @@
             `;
         }
 
-        function displayProducts(products) {
+        async function loadProductImage(productId, imageElement) {
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let imageUrl;
+                
+                if (useRenderProxy) {
+                    imageUrl = `https://veez-api-proxy.onrender.com/api/product/${productId}/preview/`;
+                } else {
+                    imageUrl = `https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/product/${productId}/preview/`;
+                }
+                
+                const response = await fetch(imageUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageObjectURL = URL.createObjectURL(blob);
+                    
+                    const img = document.createElement('img');
+                    img.src = imageObjectURL;
+                    img.alt = 'Preview du produit';
+                    img.onload = () => {
+                        imageElement.innerHTML = '';
+                        imageElement.appendChild(img);
+                    };
+                    img.onerror = () => {
+                        imageElement.innerHTML = '🖼️';
+                        imageElement.classList.remove('loading');
+                    };
+                } else {
+                    imageElement.innerHTML = '📦';
+                    imageElement.classList.remove('loading');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'image:', error);
+                imageElement.innerHTML = '📦';
+                imageElement.classList.remove('loading');
+            }
+        }
             const container = document.getElementById('productsContainer');
             
             if (products.length === 0) {
@@ -495,8 +542,8 @@
 
             const productsHTML = products.map(product => `
                 <div class="product-card">
-                    <div class="product-image">
-                        📦
+                    <div class="product-image loading" id="image-${product.id}">
+                        Chargement...
                     </div>
                     <div class="product-content">
                         <h3 class="product-title">${escapeHtml(product.name || 'Sans nom')}</h3>
@@ -517,6 +564,14 @@
             `).join('');
 
             container.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
+            
+            // Charger les images de preview de manière asynchrone
+            products.forEach(product => {
+                const imageElement = document.getElementById(`image-${product.id}`);
+                if (imageElement) {
+                    loadProductImage(product.id, imageElement);
+                }
+            });
         }
 
         function updateStats(products) {
