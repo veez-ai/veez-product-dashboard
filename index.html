@@ -1015,8 +1015,18 @@
                 </div>
                 
                 <button class="generate-btn" onclick="generateAIImage()">
-                    🎨 Générer l'image
+                    🎨 Générer l'image (Mode Démo)
                 </button>
+
+                <div style="margin-top: 10px; text-align: center;">
+                    <small style="color: #6b7280;">
+                        🎭 <strong>Mode démo actif</strong> - Configurez le serveur proxy pour l'API réelle
+                        <br>
+                        <button onclick="generateAIImageViaRealAPI()" style="background: none; border: 1px solid #7c3aed; color: #7c3aed; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-top: 5px; cursor: pointer;">
+                            Tester l'API réelle
+                        </button>
+                    </small>
+                </div>
 
                 <div class="generated-images hidden" id="generatedImages">
                     <h4 style="color: #374151; margin-bottom: 10px;">🖼️ Images générées :</h4>
@@ -1412,6 +1422,55 @@
         }
         
         function generateAIImage() {
+            var prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert('Veuillez entrer une description pour générer une image.');
+                return;
+            }
+
+            if (!currentProductId) {
+                alert('Erreur: ID de produit manquant. Debug: currentProductId = ' + currentProductId);
+                console.error('currentProductId manquant:', currentProductId);
+                return;
+            }
+
+            // Récupérer le format sélectionné
+            var selectedRatio = document.querySelector('.aspect-ratio-option.selected');
+            var aspectRatio = selectedRatio ? selectedRatio.getAttribute('data-ratio') : '1:1';
+            
+            console.log('Début génération - Produit:', currentProductId, 'Prompt:', prompt, 'Ratio:', aspectRatio);
+            
+            var btn = document.querySelector('.generate-btn');
+            btn.disabled = true;
+            btn.textContent = '🎨 Génération en cours...';
+            
+            // Masquer les images précédentes
+            document.getElementById('generatedImages').classList.add('hidden');
+            
+            // Pour le moment, utiliser directement la simulation en attendant que le serveur proxy soit configuré
+            console.log('🎭 Utilisation du mode simulation (serveur proxy non configuré pour /api/prediction/)');
+            
+            simulateImageGeneration(currentProductId, prompt, aspectRatio)
+                .then(function(result) {
+                    if (result.success) {
+                        displayGeneratedImages([result.imageUrl], result.isSimulation);
+                        showStatus('🎭 Image de démonstration générée ! Pour utiliser l\'API réelle, configurez le serveur proxy.', 'success');
+                    } else {
+                        throw new Error(result.error || 'Erreur de génération');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur génération:', error);
+                    alert('Erreur lors de la génération: ' + error.message);
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    btn.textContent = '🎨 Générer l\'image';
+                });
+        }
+
+        // Fonction pour tenter l'API réelle (à utiliser quand le proxy sera configuré)
+        function generateAIImageViaRealAPI() {
             var prompt = document.getElementById('promptInput').value.trim();
             if (!prompt) {
                 alert('Veuillez entrer une description pour générer une image.');
