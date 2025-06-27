@@ -255,6 +255,33 @@
             margin-top: 10px;
         }
 
+        /* NOUVELLE SECTION: Bouton de génération LoRA */
+        .lora-generate-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background: linear-gradient(45deg, #6f42c1, #8e44ad);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .lora-generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(111, 66, 193, 0.4);
+        }
+
+        .lora-generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -387,6 +414,110 @@
 
         .product-detail-body {
             padding: 30px;
+        }
+
+        /* NOUVELLE SECTION: Génération LoRA dans le modal */
+        .lora-generation-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .lora-generation-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .btn-generate {
+            padding: 15px 25px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .generation-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .generation-result.success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .generation-result.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .generation-result.loading {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .generated-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .generated-image {
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .generated-image img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         .packshots-grid {
@@ -743,6 +874,34 @@
                 </div>
             </div>
             <div class="product-detail-body">
+                <!-- NOUVELLE SECTION: Génération LoRA -->
+                <div id="loraGenerationSection" class="lora-generation-section" style="display: none;">
+                    <h3 style="margin-bottom: 20px; font-size: 1.3rem;">🎨 Générer des images avec LoRA</h3>
+                    <div class="lora-generation-form">
+                        <div class="form-group">
+                            <label for="generationPrompt">✍️ Prompt de génération</label>
+                            <input type="text" id="generationPrompt" placeholder="Ex: Une canette dans un bar, sur une table en bois">
+                        </div>
+                        <div class="form-group">
+                            <label for="aspectRatio">📐 Format d'image</label>
+                            <select id="aspectRatio">
+                                <option value="1:1">Carré (1:1)</option>
+                                <option value="16:9">Paysage large (16:9)</option>
+                                <option value="3:2">Paysage (3:2)</option>
+                                <option value="5:4">Paysage compact (5:4)</option>
+                                <option value="4:5">Portrait compact (4:5)</option>
+                                <option value="2:3">Portrait (2:3)</option>
+                                <option value="9:16">Portrait vertical (9:16)</option>
+                            </select>
+                        </div>
+                        <button class="btn-generate" onclick="generateLoraImage()">
+                            <span id="generateText">🚀 Générer l'image</span>
+                            <span id="generateSpinner" class="loading-spinner" style="display: none;"></span>
+                        </button>
+                    </div>
+                    <div id="generationResult" class="generation-result"></div>
+                </div>
+
                 <div class="section-title">🎨 Rendus 3D (Packshots)</div>
                 <div id="packshotsGrid" class="packshots-grid">
                     <!-- Les packshots seront ajoutés ici -->
@@ -761,6 +920,7 @@
     <script>
         let currentToken = '';
         let products = [];
+        let currentProductId = ''; // NOUVEAU: Pour stocker l'ID du produit actuel dans le modal
 
         function showStatus(message, type = 'loading') {
             const statusDiv = document.getElementById('status');
@@ -909,6 +1069,12 @@
             let productsHTML = '';
             for (let i = 0; i < products.length; i++) {
                 const product = products[i];
+                
+                // NOUVEAU: Bouton de génération LoRA
+                const loraButton = product.lora_enabled ? 
+                    '<button class="lora-generate-btn" onclick="openProductModal(\'' + product.id + '\')">🎨 Générer avec LoRA</button>' : 
+                    '';
+                
                 productsHTML += '<div class="product-card">' +
                     '<div class="product-image loading" id="image-' + product.id + '">Chargement...</div>' +
                     '<div class="product-content">' +
@@ -921,6 +1087,7 @@
                             '</div>' +
                         '</div>' +
                         '<div class="product-date">📅 Modifié: ' + formatDate(product.date_modification) + '</div>' +
+                        loraButton +
                     '</div>' +
                 '</div>';
             }
@@ -1099,10 +1266,124 @@
             setTimeout(hideStatus, 3000);
         }
 
+        // NOUVELLES FONCTIONS: Génération LoRA
+        async function generateLoraImage() {
+            const prompt = document.getElementById('generationPrompt').value.trim();
+            const aspectRatio = document.getElementById('aspectRatio').value;
+            const resultDiv = document.getElementById('generationResult');
+            const generateText = document.getElementById('generateText');
+            const generateSpinner = document.getElementById('generateSpinner');
+            const generateBtn = document.querySelector('.btn-generate');
+            
+            if (!prompt) {
+                showGenerationResult('Veuillez entrer un prompt de génération', 'error');
+                return;
+            }
+            
+            if (!currentProductId) {
+                showGenerationResult('Erreur: Aucun produit sélectionné', 'error');
+                return;
+            }
+            
+            // Activer l'état de chargement
+            generateBtn.disabled = true;
+            generateText.textContent = 'Génération en cours...';
+            generateSpinner.style.display = 'inline-block';
+            showGenerationResult('⏳ Génération de l\'image en cours...', 'loading');
+            
+            try {
+                const useRenderProxy = document.getElementById('useRenderProxy').checked;
+                let apiUrl;
+                
+                if (useRenderProxy) {
+                    apiUrl = 'https://veez-api-proxy.onrender.com/api/prediction/';
+                } else {
+                    apiUrl = 'https://cors-anywhere.herokuapp.com/https://app.veez.ai/api/prediction/';
+                }
+                
+                // Créer le FormData
+                const formData = new FormData();
+                formData.append('product_id', currentProductId);
+                formData.append('prompt', prompt);
+                formData.append('aspect_ratio', aspectRatio);
+                
+                console.log('Génération LoRA:', {
+                    product_id: currentProductId,
+                    prompt: prompt,
+                    aspect_ratio: aspectRatio
+                });
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + currentToken
+                        // NE PAS ajouter Content-Type pour FormData - le navigateur le fait automatiquement
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur API: ' + response.status + ' ' + response.statusText);
+                }
+                
+                const result = await response.json();
+                console.log('Résultat génération:', result);
+                
+                if (result.images && result.images.length > 0) {
+                    displayGeneratedImages(result.images, prompt, aspectRatio);
+                    showGenerationResult('✅ Image générée avec succès!', 'success');
+                } else {
+                    throw new Error('Aucune image générée');
+                }
+                
+            } catch (error) {
+                console.error('Erreur génération LoRA:', error);
+                showGenerationResult('❌ Erreur lors de la génération: ' + error.message, 'error');
+            } finally {
+                // Désactiver l'état de chargement
+                generateBtn.disabled = false;
+                generateText.textContent = '🚀 Générer l\'image';
+                generateSpinner.style.display = 'none';
+            }
+        }
+        
+        function showGenerationResult(message, type) {
+            const resultDiv = document.getElementById('generationResult');
+            resultDiv.innerHTML = message;
+            resultDiv.className = 'generation-result ' + type;
+            resultDiv.style.display = 'block';
+        }
+        
+        function displayGeneratedImages(imageUrls, prompt, aspectRatio) {
+            const resultDiv = document.getElementById('generationResult');
+            
+            let imagesHTML = '<div class="generated-images">';
+            for (let i = 0; i < imageUrls.length; i++) {
+                const imageUrl = imageUrls[i];
+                imagesHTML += 
+                    '<div class="generated-image">' +
+                        '<img src="' + escapeHtml(imageUrl) + '" alt="Image générée" onerror="this.parentElement.innerHTML=\'❌ Erreur chargement\'">' +
+                        '<div style="padding: 10px; background: rgba(255,255,255,0.1); font-size: 0.8rem;">' +
+                            '<strong>Prompt:</strong> ' + escapeHtml(prompt.substring(0, 30)) + (prompt.length > 30 ? '...' : '') + '<br>' +
+                            '<strong>Format:</strong> ' + aspectRatio +
+                            '<div style="margin-top: 10px;">' +
+                                '<a href="' + escapeHtml(imageUrl) + '" download="generated_' + Date.now() + '.png" class="btn-image btn-download">⬇️ Télécharger</a>' +
+                                '<button class="btn-image btn-copy" onclick="copyToClipboard(\'' + escapeHtml(imageUrl) + '\')">📋 Copier URL</button>' +
+                                '<a href="' + escapeHtml(imageUrl) + '" target="_blank" class="btn-image btn-open">🔗 Ouvrir</a>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+            imagesHTML += '</div>';
+            
+            resultDiv.innerHTML = imagesHTML;
+        }
+
         // Fonctions pour le modal
         async function openProductModal(productId) {
             const modal = document.getElementById('productModal');
             modal.classList.add('active');
+            currentProductId = productId; // NOUVEAU: Stocker l'ID du produit
             
             // Afficher un loader pendant le chargement
             document.getElementById('modalProductTitle').textContent = 'Chargement...';
@@ -1148,6 +1429,18 @@
             const loraStatus = document.getElementById('modalLoraStatus');
             loraStatus.textContent = product.lora_enabled ? '✅ LoRA Activé' : '❌ LoRA Désactivé';
             loraStatus.className = 'lora-badge ' + (product.lora_enabled ? 'lora-enabled' : 'lora-disabled');
+            
+            // NOUVEAU: Afficher/masquer la section de génération LoRA
+            const loraSection = document.getElementById('loraGenerationSection');
+            if (product.lora_enabled) {
+                loraSection.style.display = 'block';
+                // Pré-remplir le prompt avec le nom du produit
+                document.getElementById('generationPrompt').value = product.name || '';
+                // Reset du résultat précédent
+                document.getElementById('generationResult').style.display = 'none';
+            } else {
+                loraSection.style.display = 'none';
+            }
             
             // Afficher les packshots
             const packshotsGrid = document.getElementById('packshotsGrid');
@@ -1229,6 +1522,7 @@
 
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('active');
+            currentProductId = ''; // NOUVEAU: Reset de l'ID du produit
         }
 
         function expandPackshot(imageId, angle, url) {
@@ -1318,6 +1612,13 @@
             }
         });
 
+        // NOUVEAU: Event listener pour la génération LoRA
+        document.getElementById('generationPrompt').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateLoraImage();
+            }
+        });
+
         // Fermer le modal en cliquant sur le fond
         document.getElementById('productModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -1336,4 +1637,4 @@
         document.getElementById('tokenInput').focus();
     </script>
 </body>
-</html>'
+</html>
