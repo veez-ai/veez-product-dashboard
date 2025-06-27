@@ -1310,8 +1310,15 @@
                 console.log('Génération LoRA:', {
                     product_id: currentProductId,
                     prompt: prompt,
-                    aspect_ratio: aspectRatio
+                    aspect_ratio: aspectRatio,
+                    apiUrl: apiUrl
                 });
+                
+                // Debug FormData
+                console.log('FormData entries:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}: ${value}`);
+                }
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -1323,10 +1330,24 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Erreur API: ' + response.status + ' ' + response.statusText);
+                    const errorText = await response.text();
+                    console.error('Réponse d\'erreur:', errorText);
+                    throw new Error('Erreur API: ' + response.status + ' ' + response.statusText + ' - ' + errorText);
                 }
                 
-                const result = await response.json();
+                // Récupérer le texte brut d'abord pour debug
+                const responseText = await response.text();
+                console.log('Réponse brute de l\'API:', responseText);
+                
+                // Essayer de parser le JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Erreur parsing JSON:', parseError);
+                    console.error('Contenu reçu:', responseText);
+                    throw new Error('Réponse invalide de l\'API: ' + responseText);
+                }
                 console.log('Résultat génération:', result);
                 
                 if (result.images && result.images.length > 0) {
